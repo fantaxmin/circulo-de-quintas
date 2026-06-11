@@ -1,0 +1,148 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Cada concepto: título y párrafos. Se renderiza como una tarjeta.
+const concepts = [
+  {
+    id: "circulo",
+    title: "¿Qué es el círculo de quintas?",
+    body: [
+      "Es un diagrama que ordena las 12 notas musicales por intervalos de quinta justa (7 semitonos). Si partes de Do y subes una quinta llegas a Sol, de Sol a Re, de Re a La… y tras 12 pasos vuelves a Do.",
+      "En sentido horario cada tonalidad gana un sostenido (♯); en sentido antihorario, un bemol (♭). Por eso es una herramienta tan práctica: muestra de un vistazo qué tonalidades están 'cerca' entre sí y comparten más notas.",
+    ],
+  },
+  {
+    id: "notas",
+    title: "Notas, tonos y semitonos",
+    body: [
+      "El semitono es la distancia más pequeña entre dos notas (de una tecla a la inmediata, blanca o negra). Un tono son dos semitonos.",
+      "Las 12 alturas son: Do, Do♯/Re♭, Re, Re♯/Mi♭, Mi, Fa, Fa♯/Sol♭, Sol, Sol♯/La♭, La, La♯/Si♭, Si. Una misma altura con dos nombres (Do♯ = Re♭) se llama enarmonía.",
+      "La octava es la distancia entre una nota y la siguiente con el mismo nombre (de Do a Do): el grado 8 de una escala es la tónica (grado 1) repetida, una octava más aguda. Por eso una escala 'cierra' al llegar a la octava.",
+    ],
+  },
+  {
+    id: "mayor",
+    title: "La escala mayor",
+    body: [
+      "Es la escala base de la música occidental, de sonido alegre y estable. Se construye con el patrón de tonos (T) y semitonos (S): T–T–S–T–T–T–S.",
+      "Por ejemplo Do mayor usa solo teclas blancas: Do Re Mi Fa Sol La Si. El patrón de tonos y semitonos es lo que define el 'color' mayor, sin importar la nota de inicio.",
+    ],
+  },
+  {
+    id: "menor",
+    title: "La escala menor natural",
+    body: [
+      "De sonido más triste o melancólico. Su patrón es T–S–T–T–S–T–T.",
+      "Cada escala mayor tiene una menor 'relativa' que usa exactamente las mismas notas, pero empieza en su 6º grado. La relativa menor de Do mayor es La menor (La Si Do Re Mi Fa Sol).",
+    ],
+  },
+  {
+    id: "menor-variantes",
+    title: "Menor armónica y melódica",
+    body: [
+      "La menor armónica eleva la 7ª nota un semitono. Esto crea una dominante fuerte (un acorde mayor en el V grado) que resuelve mejor a la tónica, y produce ese salto exótico tan característico.",
+      "La menor melódica eleva la 6ª y la 7ª al subir, suavizando el salto de la armónica; al bajar suele volver a la menor natural. Es fundamental en el jazz.",
+    ],
+  },
+  {
+    id: "relativa",
+    title: "Relativa mayor y menor",
+    body: [
+      "Dos tonalidades son relativas cuando comparten la misma armadura (los mismos sostenidos o bemoles) y, por tanto, las mismas notas. Se diferencian en cuál sienten como 'centro' o reposo.",
+      "En el círculo, el anillo exterior muestra las tonalidades mayores y el interior sus relativas menores. En la app principal puedes alternar entre una y su relativa con un clic.",
+    ],
+  },
+  {
+    id: "grados",
+    title: "Los grados de la escala",
+    body: [
+      "Cada nota de la escala es un 'grado', numerado con cifrado romano (I, ii, iii, IV, V, vi, vii°). Las mayúsculas indican acordes mayores y las minúsculas, menores; el ° indica disminuido.",
+      "En una escala mayor el patrón de calidades es siempre: I mayor, ii menor, iii menor, IV mayor, V mayor, vi menor, vii° disminuido. Esto te dice qué acordes 'pertenecen' a la tonalidad.",
+    ],
+  },
+  {
+    id: "acordes",
+    title: "Tipos de acordes",
+    body: [
+      "Un acorde es la combinación de tres o más notas que suenan juntas. El más básico es la tríada: la 1ª, 3ª y 5ª nota de una escala apiladas.",
+      "Mayor y menor: dependen de la 3ª. Tríada mayor (1 – 3 – 5) suena alegre; tríada menor (1 – ♭3 – 5) suena triste.",
+      "Aumentado: tríada mayor con la 5ª subida un semitono (1 – 3 – ♯5). Suena tenso y flotante. Disminuido: tríada menor con la 5ª bajada (1 – ♭3 – ♭5). Suena inestable y pide resolver.",
+      "Suspendidos (sus2 y sus4): se reemplaza la 3ª por la 2ª (sus2) o por la 4ª (sus4). Quedan 'abiertos', sin color mayor ni menor, y suelen resolver a la tríada.",
+      "De séptima: añaden una 4ª nota. La 7ª de dominante (1 – 3 – 5 – ♭7) crea tensión que empuja a resolver; la 7ª mayor (1 – 3 – 5 – 7) suena suave y jazzístico; la menor 7 (1 – ♭3 – 5 – ♭7) es cálida y oscura.",
+      "De novena, oncena y trecena: siguen apilando terceras (9ª, 11ª, 13ª) sobre el acorde de séptima. Aportan riqueza y color, muy típicos del jazz y la bossa nova.",
+    ],
+  },
+  {
+    id: "inversiones",
+    title: "Inversiones de acordes",
+    body: [
+      "Una inversión es el mismo acorde (las mismas notas), pero con una nota distinta en el bajo. La armonía no cambia; cambian el color y la sensación.",
+      "En posición fundamental, la raíz está abajo. En 1ª inversión, la 3ª pasa al bajo; en 2ª inversión, la 5ª; y en los acordes de séptima, la 3ª inversión pone la 7ª en el bajo. Cada vez 'subes' la nota más grave una octava.",
+      "Ejemplo con Do mayor (Do–Mi–Sol): fundamental = Do Mi Sol; 1ª inversión = Mi Sol Do; 2ª inversión = Sol Do Mi.",
+      "Se usan sobre todo para que el bajo se mueva poco entre acordes (conducción de voces suave) y para dar variedad sin cambiar la armonía. Pruébalas en la página de Acordes.",
+    ],
+  },
+  {
+    id: "modos",
+    title: "Los modos griegos",
+    body: [
+      "Un modo es una escala que usa las mismas notas de una escala mayor, pero empezando (y reposando) en un grado distinto. Cada punto de partida da un color propio.",
+      "Los siete modos son: Jónico (el mayor), Dórico, Frigio, Lidio, Mixolidio, Eólico (el menor natural) y Locrio. En la app principal, al tocar una tarjeta de grado, ves su modo con fórmula, notas y carácter.",
+    ],
+  },
+  {
+    id: "armaduras",
+    title: "Armaduras: sostenidos y bemoles",
+    body: [
+      "La armadura es el conjunto de ♯ o ♭ al principio del pentagrama que define la tonalidad. Las tonalidades con sostenidos (Sol, Re, La…) están a la derecha del círculo; las de bemoles (Fa, Si♭, Mi♭…), a la izquierda.",
+      "El orden de aparición es fijo: los sostenidos siguen el patrón Fa-Do-Sol-Re-La-Mi-Si, y los bemoles, el inverso. El círculo de quintas es justo el mapa de ese orden.",
+    ],
+  },
+];
+---
+
+<Layout title="Conceptos · Círculo de Quintas">
+  <main class="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-10">
+    <header class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight text-slate-50 sm:text-4xl">Conceptos</h1>
+      <p class="mt-2 text-slate-400">
+        Lo esencial para entender el círculo de quintas y aprovechar la app.
+      </p>
+    </header>
+
+    <div class="flex flex-col gap-5">
+      {
+        concepts.map((c) => (
+          <section
+            id={c.id}
+            class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 sm:p-8"
+          >
+            <h2 class="mb-4 border-l-4 border-amber-500 pl-3 text-xl font-bold text-amber-300">
+              {c.title}
+            </h2>
+            <div class="flex flex-col gap-3">
+              {c.body.map((p) => (
+                <p class="leading-relaxed text-slate-300">{p}</p>
+              ))}
+            </div>
+          </section>
+        ))
+      }
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-3 pt-2">
+      <a
+        href="/"
+        class="rounded-lg bg-amber-500 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-amber-400"
+      >
+        Ir al círculo interactivo
+      </a>
+      <a
+        href="/escalas"
+        class="rounded-lg border border-slate-600 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+      >
+        Explorar escalas
+      </a>
+    </div>
+  </main>
+</Layout>
