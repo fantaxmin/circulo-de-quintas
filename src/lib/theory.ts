@@ -227,6 +227,28 @@ export function buildView(keyIndex: number, isMinor: boolean): View {
   };
 }
 
+/**
+ * Mapea cada grado de la vista a su posición en el círculo de quintas.
+ * Clave: `${ring}-${segmentIndex}` (ring = "major" | "minor"), valor = índice
+ * del grado (0–6). Los acordes mayores caen en el anillo exterior; los menores
+ * y disminuidos, en el interior (el segmento de su relativo menor). Así los
+ * 7 grados forman la "cuña" diatónica característica alrededor de la tónica.
+ */
+export function circleSlots(view: View): Map<string, number> {
+  const slots = new Map<string, number>();
+  for (const d of view.degrees) {
+    const pc = pitchClass(d.note);
+    if (d.quality === "mayor") {
+      const j = KEYS.findIndex((k) => pitchClass(k.tonic) === pc);
+      if (j >= 0) slots.set(`major-${j}`, d.index);
+    } else {
+      const j = KEYS.findIndex((k) => pitchClass(stripMinor(k.relative)) === pc);
+      if (j >= 0) slots.set(`minor-${j}`, d.index);
+    }
+  }
+  return slots;
+}
+
 function makeDegree(
   index: number,
   note: string,

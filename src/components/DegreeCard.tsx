@@ -1,8 +1,10 @@
 // Tarjeta de un grado: nota, calidad y botón de acorde.
 // Al seleccionarla, el detalle del modo se muestra en un panel ancho aparte.
 
+import type { CSSProperties } from "react";
 import type { DegreeView } from "../lib/types";
 import { prettyEnglish } from "../lib/music";
+import { degreeColor } from "../lib/colors";
 import { QUALITY_BADGE, QUALITY_LABEL, QUALITY_TIP, romanTip } from "../lib/labels";
 import { InfoIcon } from "./InfoIcon";
 
@@ -15,11 +17,18 @@ interface Props {
 }
 
 export function DegreeCard({ degree: d, isMinor, selected, onSelect, onPlay }: Props) {
+  // Color propio del grado, compartido con su segmento en el círculo de quintas.
+  const color = degreeColor(d.index);
+  const style: CSSProperties = {
+    "--deg": color,
+    ...(selected ? { borderColor: color, boxShadow: `0 0 0 2px ${color}40` } : {}),
+  } as CSSProperties;
   return (
     <div
-      className={`flex min-w-24 flex-1 cursor-pointer flex-col items-center gap-1.5 rounded-xl border bg-slate-800/60 p-3 text-center transition-colors ${
-        selected ? "border-amber-500 ring-1 ring-amber-500/50" : "border-slate-700 hover:border-amber-500/40"
+      className={`flex min-w-24 flex-1 cursor-pointer flex-col items-center gap-1.5 overflow-hidden rounded-xl border bg-slate-800/60 p-3 text-center transition-colors ${
+        selected ? "" : "border-slate-700 hover:[border-color:var(--deg)]"
       }`}
+      style={style}
       onClick={onSelect}
       role="button"
       tabIndex={0}
@@ -31,7 +40,15 @@ export function DegreeCard({ degree: d, isMinor, selected, onSelect, onPlay }: P
         }
       }}
     >
-      <span className="flex items-center text-sm font-bold tracking-wide text-amber-400">
+      <span
+        className="-mt-3 mb-0.5 h-1.5 w-full rounded-b-full"
+        style={{ backgroundColor: color }}
+        aria-hidden
+      />
+      <span
+        className="flex items-center text-sm font-bold tracking-wide"
+        style={{ color }}
+      >
         {d.roman}
         <InfoIcon tip={romanTip(d, isMinor)} />
       </span>

@@ -98,7 +98,7 @@ export default function App() {
 
   return (
     <div className="flex w-full flex-col items-center gap-8">
-      <Circle keyIndex={keyIndex} isMinor={isMinor} onSelect={selectKey} />
+      <Circle view={view} onSelect={selectKey} />
 
       {/* Header de la tonalidad activa */}
       <header className="text-center">

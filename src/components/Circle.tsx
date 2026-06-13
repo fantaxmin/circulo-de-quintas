@@ -1,8 +1,14 @@
 // Círculo de quintas en SVG. Anillo exterior = mayores, interior = relativas menores.
+// Al elegir una tonalidad, los segmentos diatónicos se tiñen con el color de su
+// grado (mismo código que la tablita de grados), formando la cuña característica.
 
+import { useMemo } from "react";
 import { KEYS } from "../lib/data";
 import { annularSector, polar } from "../lib/geometry";
 import { prettyEnglish, toLatin } from "../lib/music";
+import { circleSlots } from "../lib/theory";
+import { degreeColor } from "../lib/colors";
+import type { View } from "../lib/types";
 
 const CX = 200;
 const CY = 200;
@@ -26,12 +32,13 @@ const SEGMENTS = KEYS.map((key, i) => {
 });
 
 interface Props {
-  keyIndex: number;
-  isMinor: boolean;
+  view: View;
   onSelect: (index: number) => void;
 }
 
-export function Circle({ keyIndex, isMinor, onSelect }: Props) {
+export function Circle({ view, onSelect }: Props) {
+  const slots = useMemo(() => circleSlots(view), [view]);
+
   return (
     <svg
       viewBox="0 0 400 400"
@@ -40,13 +47,17 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
       aria-label="Círculo de quintas"
     >
       {SEGMENTS.map(({ index, key, majorPath, minorPath, majorLabel, minorLabel }) => {
-        const active = index === keyIndex;
-        const majorActive = active && !isMinor;
-        const minorActive = active && isMinor;
+        const majorDeg = slots.get(`major-${index}`);
+        const minorDeg = slots.get(`minor-${index}`);
+        const majorColor = majorDeg !== undefined ? degreeColor(majorDeg) : null;
+        const minorColor = minorDeg !== undefined ? degreeColor(minorDeg) : null;
+        // El grado 0 (I o i) es la tónica: se resalta más.
+        const majorTonic = majorDeg === 0;
+        const minorTonic = minorDeg === 0;
         return (
           <g
             key={index}
-            className="cursor-pointer focus:outline-none"
+            className="group cursor-pointer focus:outline-none"
             role="button"
             tabIndex={0}
             aria-label={`Tonalidad de ${key.tonic} mayor`}
@@ -60,24 +71,26 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
           >
             <path
               d={majorPath}
-              className={`stroke-slate-950 stroke-2 transition-colors ${
-                majorActive ? "fill-amber-500" : "fill-slate-800 hover:fill-slate-600"
-              }`}
+              fill={majorColor ?? undefined}
+              fillOpacity={majorColor ? (majorTonic ? 0.8 : 0.45) : undefined}
+              className={`transition group-hover:brightness-125 ${
+                majorTonic ? "stroke-slate-50 stroke-[3]" : "stroke-slate-950 stroke-2"
+              } ${majorColor ? "" : "fill-slate-800"}`}
             />
             <path
               d={minorPath}
-              className={`stroke-slate-950 stroke-2 transition-colors ${
-                minorActive ? "fill-amber-400" : "fill-slate-700 hover:fill-slate-500"
-              }`}
+              fill={minorColor ?? undefined}
+              fillOpacity={minorColor ? (minorTonic ? 0.8 : 0.45) : undefined}
+              className={`transition group-hover:brightness-125 ${
+                minorTonic ? "stroke-slate-50 stroke-[3]" : "stroke-slate-950 stroke-2"
+              } ${minorColor ? "" : "fill-slate-700"}`}
             />
             <text
               x={majorLabel.x}
               y={majorLabel.y}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`pointer-events-none text-[17px] font-bold ${
-                majorActive ? "fill-slate-900" : "fill-slate-50"
-              }`}
+              className="pointer-events-none fill-slate-50 text-[17px] font-bold"
             >
               {prettyEnglish(key.tonic)}
             </text>
@@ -86,9 +99,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               y={majorLabel.y + 13}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`pointer-events-none text-[9px] font-medium ${
-                majorActive ? "fill-slate-800" : "fill-slate-300"
-              }`}
+              className="pointer-events-none fill-slate-300 text-[9px] font-medium"
             >
               {toLatin(key.tonic)}
             </text>
@@ -97,9 +108,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               y={minorLabel.y}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`pointer-events-none text-[11px] font-semibold ${
-                minorActive ? "fill-slate-900" : "fill-slate-200"
-              }`}
+              className="pointer-events-none fill-slate-200 text-[11px] font-semibold"
             >
               {prettyEnglish(key.relative)}
             </text>
