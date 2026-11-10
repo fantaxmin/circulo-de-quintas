@@ -1,8 +1,14 @@
 // Círculo de quintas en SVG. Anillo exterior = mayores, interior = relativas menores.
+// Al elegir una tonalidad, los segmentos diatónicos se tiñen con el color de su
+// grado (mismo código que la tablita de grados), formando la cuña característica.
 
+import { useMemo } from "react";
 import { KEYS } from "../lib/data";
 import { annularSector, polar } from "../lib/geometry";
 import { prettyEnglish, toLatin } from "../lib/music";
+import { circleSlots } from "../lib/theory";
+import { degreeColor } from "../lib/colors";
+import type { View } from "../lib/types";
 
 const CX = 200;
 const CY = 200;
@@ -26,8 +32,7 @@ const SEGMENTS = KEYS.map((key, i) => {
 });
 
 interface Props {
-  keyIndex: number;
-  isMinor: boolean;
+  view: View;
   /** Selecciona una tonalidad: anillo exterior = mayor, interior = relativa menor. */
   onSelect: (index: number, minor: boolean) => void;
 }
@@ -40,7 +45,9 @@ function activate(e: React.KeyboardEvent, fn: () => void): void {
   }
 }
 
-export function Circle({ keyIndex, isMinor, onSelect }: Props) {
+export function Circle({ view, onSelect }: Props) {
+  const { keyIndex, isMinor } = view;
+  const slots = useMemo(() => circleSlots(view), [view]);
   const activeKey = KEYS[keyIndex];
   const activeLabel = isMinor ? activeKey.relative : activeKey.tonic;
   return (
@@ -51,9 +58,13 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
       aria-label="Círculo de quintas"
     >
       {SEGMENTS.map(({ index, key, majorPath, minorPath, majorLabel, minorLabel }) => {
-        const active = index === keyIndex;
-        const majorActive = active && !isMinor;
-        const minorActive = active && isMinor;
+        const majorDeg = slots.get(`major-${index}`);
+        const minorDeg = slots.get(`minor-${index}`);
+        const majorColor = majorDeg !== undefined ? degreeColor(majorDeg) : null;
+        const minorColor = minorDeg !== undefined ? degreeColor(minorDeg) : null;
+        // El grado 0 (I o i) es la tónica activa: se resalta más.
+        const majorActive = majorDeg === 0;
+        const minorActive = minorDeg === 0;
         return (
           <g key={index}>
             <path
@@ -64,9 +75,11 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               aria-pressed={majorActive}
               onClick={() => onSelect(index, false)}
               onKeyDown={(e) => activate(e, () => onSelect(index, false))}
-              className={`cursor-pointer stroke-slate-950 stroke-2 transition-colors focus:outline-none focus-visible:stroke-amber-200 ${
-                majorActive ? "fill-amber-500" : "fill-slate-800 hover:fill-slate-600"
-              }`}
+              fill={majorColor ?? undefined}
+              fillOpacity={majorColor ? (majorActive ? 0.85 : 0.45) : undefined}
+              className={`cursor-pointer transition hover:brightness-125 focus:outline-none focus-visible:stroke-amber-200 ${
+                majorActive ? "stroke-slate-50 stroke-[3]" : "stroke-slate-950 stroke-2"
+              } ${majorColor ? "" : "fill-slate-800"}`}
             />
             <path
               d={minorPath}
@@ -76,9 +89,11 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               aria-pressed={minorActive}
               onClick={() => onSelect(index, true)}
               onKeyDown={(e) => activate(e, () => onSelect(index, true))}
-              className={`cursor-pointer stroke-slate-950 stroke-2 transition-colors focus:outline-none focus-visible:stroke-amber-200 ${
-                minorActive ? "fill-amber-400" : "fill-slate-700 hover:fill-slate-500"
-              }`}
+              fill={minorColor ?? undefined}
+              fillOpacity={minorColor ? (minorActive ? 0.85 : 0.45) : undefined}
+              className={`cursor-pointer transition hover:brightness-125 focus:outline-none focus-visible:stroke-amber-200 ${
+                minorActive ? "stroke-slate-50 stroke-[3]" : "stroke-slate-950 stroke-2"
+              } ${minorColor ? "" : "fill-slate-700"}`}
             />
             <text
               x={majorLabel.x}
@@ -86,7 +101,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               textAnchor="middle"
               dominantBaseline="central"
               className={`pointer-events-none text-[17px] font-bold ${
-                majorActive ? "fill-slate-900" : "fill-slate-50"
+                "fill-slate-50"
               }`}
             >
               {prettyEnglish(key.tonic)}
@@ -97,7 +112,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               textAnchor="middle"
               dominantBaseline="central"
               className={`pointer-events-none text-[11px] font-medium ${
-                majorActive ? "fill-slate-800" : "fill-slate-300"
+                "fill-slate-200"
               }`}
             >
               {toLatin(key.tonic)}
@@ -108,7 +123,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               textAnchor="middle"
               dominantBaseline="central"
               className={`pointer-events-none text-[12px] font-semibold ${
-                minorActive ? "fill-slate-900" : "fill-slate-200"
+                "fill-slate-100"
               }`}
             >
               {prettyEnglish(key.relative)}

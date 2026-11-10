@@ -153,7 +153,7 @@ export default function App() {
     <MotionConfig reducedMotion="user">
     <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-12">
       <div className="min-w-0 self-start">
-        <Circle keyIndex={keyIndex} isMinor={isMinor} onSelect={selectKey} />
+        <Circle view={view} onSelect={selectKey} />
       </div>
 
       <div className="flex min-w-0 flex-col gap-6">

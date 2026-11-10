@@ -2,7 +2,9 @@
 // Al seleccionarla, el detalle del modo se muestra en un panel ancho aparte.
 
 import type { DegreeView } from "../lib/types";
+import type { CSSProperties } from "react";
 import { prettyEnglish } from "../lib/music";
+import { degreeColor } from "../lib/colors";
 import { QUALITY_BADGE, QUALITY_LABEL, QUALITY_TIP, romanTip } from "../lib/labels";
 import { InfoIcon } from "./InfoIcon";
 
@@ -17,18 +19,30 @@ interface Props {
 }
 
 export function DegreeCard({ degree: d, isMinor, selected, sounding = false, onSelect, onPlay }: Props) {
+  // Color propio del grado, compartido con su segmento en el círculo de quintas.
+  const color = degreeColor(d.index);
+  const style: CSSProperties = {
+    "--deg": color,
+    ...(selected && !sounding ? { borderColor: color, boxShadow: `0 0 0 2px ${color}40` } : {}),
+  } as CSSProperties;
   return (
     <div
-      className={`flex min-w-24 flex-1 flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-colors duration-100 ${
+      style={style}
+      className={`flex min-w-24 flex-1 flex-col overflow-hidden items-center gap-1.5 rounded-xl border p-3 text-center transition-colors duration-100 ${
         sounding
           ? "border-playing bg-playing/10 ring-1 ring-playing/50"
           : selected
-            ? "border-accent bg-surface-2 ring-1 ring-accent/50"
-            : "border-border bg-surface-2 hover:border-accent/40"
+            ? "bg-surface-2"
+            : "border-border bg-surface-2 hover:[border-color:var(--deg)]"
       }`}
     >
       {/* Info del grado (los ⓘ quedan fuera de los botones para no anidar interactivos) */}
-      <span className="flex items-center text-sm font-bold tracking-wide text-accent">
+      <span
+        className="-mt-3 mb-0.5 h-1.5 w-full rounded-b-full"
+        style={{ backgroundColor: color }}
+        aria-hidden
+      />
+      <span className="flex items-center text-sm font-bold tracking-wide" style={{ color }}>
         {d.roman}
         <InfoIcon tip={romanTip(d, isMinor)} />
       </span>
