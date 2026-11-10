@@ -2,7 +2,7 @@
 // Distingue la digitación elegida (puntos) de lo que suena (anillo "playing") para
 // no iluminar todos los unísonos. Cada casilla es pulsable con clic o teclado.
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { INSTRUMENTS, fretMidi, prettySpelling, type FretPos, type InstrumentId } from "../lib/fretboard";
 
 export type FretMark = "correct" | "wrong" | "target";
@@ -67,6 +67,8 @@ export function Fretboard({
   const W = LEFT + frets * COL + 8;
   const H = TOP + (nStrings - 1) * ROW + 30;
   const gridRef = useRef<SVGSVGElement>(null);
+  // Foco itinerante: una sola casilla con tabIndex 0 (la última enfocada).
+  const [active, setActive] = useState({ string: 1, fret: from });
 
   // x del centro de la casilla de un traste (el traste 0 va a la izquierda de la cejuela).
   const cx = (fret: number) => LEFT + (fret - from) * COL + COL / 2;
@@ -97,7 +99,8 @@ export function Fretboard({
               height={ROW}
               fill="transparent"
               role="button"
-              tabIndex={s === 1 && f === from ? 0 : -1}
+              tabIndex={s === active.string && f === Math.max(from, Math.min(to, active.fret)) ? 0 : -1}
+              onFocus={() => setActive({ string: s, fret: f })}
               aria-label={`Cuerda ${s}, traste ${f}`}
               className="cursor-pointer outline-none focus-visible:fill-white/10 hover:fill-white/5"
               onClick={() => onPress({ ...pos, midi })}

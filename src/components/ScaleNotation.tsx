@@ -13,7 +13,7 @@ import {
 } from "../lib/fretboard";
 import { positionEvents } from "../lib/examples";
 import { midiToFreq } from "../lib/theory";
-import { playChord } from "../lib/audio";
+import { playChord, stopAll } from "../lib/audio";
 import { Staff } from "./Staff";
 import { Fretboard } from "./Fretboard";
 
@@ -33,7 +33,11 @@ interface Props {
   step?: number;
 }
 
-const playMidi = (m: number) => playChord([midiToFreq(m)], 0.9);
+/** Toca una nota suelta cortando la secuencia en curso; con `step` se resalta como paso de la escala. */
+const playMidi = (m: number, step?: number) => {
+  stopAll();
+  playChord([midiToFreq(m)], 0.9, step !== undefined ? { tag: "scale", step } : {});
+};
 
 export function ScaleNotation({ instrument, notes, pianoMidis, positions, posIdx, onPosIdx, step }: Props) {
   const [showTab, setShowTab] = useState(true);
@@ -61,7 +65,7 @@ export function ScaleNotation({ instrument, notes, pianoMidis, positions, posIdx
 
   const onNoteClick = (id: string) => {
     const i = Number(id.slice(1));
-    playMidi(pos ? pos.tones[i].midi : pianoMidis[i]);
+    playMidi(pos ? pos.tones[i].midi : pianoMidis[i], i);
   };
 
   if (instrument === "piano" || !pos) {
@@ -131,7 +135,11 @@ export function ScaleNotation({ instrument, notes, pianoMidis, positions, posIdx
           reveal={practice ? "none" : "fingering"}
           showNames={!practice}
           spellings={spellings}
-          onPress={({ midi }) => playMidi(midi)}
+          onPress={(p) => {
+            // Si la casilla es parte de la digitación, se resalta como ese paso.
+            const i = pos.tones.findIndex((t) => t.string === p.string && t.fret === p.fret);
+            playMidi(p.midi, i >= 0 ? i : undefined);
+          }}
         />
         <p className="mt-1 text-xs text-muted">
           Puntos = digitación de esta posición · ámbar = tónica · cian = lo que suena. Toca cualquier casilla para escucharla.

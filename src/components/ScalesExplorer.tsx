@@ -6,7 +6,7 @@ import { buildScale, midiToFreq, noteToMidi, scaleIntervals, scaleSteps } from "
 import { INSTRUMENTS, scalePositions, spellingPc } from "../lib/fretboard";
 import { ScaleNotation, type ScaleInstrument } from "./ScaleNotation";
 import type { ScaleStep } from "../lib/theory";
-import { playSequence } from "../lib/audio";
+import { playSequence, stopAll } from "../lib/audio";
 import { usePlayingNotes } from "../lib/usePlayingNotes";
 import { MotionConfig, motion } from "motion/react";
 import { prettyEnglish, toLatin } from "../lib/music";
@@ -46,6 +46,9 @@ export default function ScalesExplorer() {
   );
   // Al cambiar escala o instrumento, vuelve a la posición recomendada.
   useEffect(() => setPosIdx(0), [instrument, root, def]);
+  // Si cambia lo que se muestra, corta la secuencia anterior (si no, su resaltado
+  // caería sobre la nueva digitación).
+  useEffect(() => stopAll(), [instrument, root, def, posIdx]);
   const pos = positions[posIdx];
   const scaleStep = playing.steps.scale;
 

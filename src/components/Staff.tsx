@@ -32,6 +32,16 @@ function backgroundOf(el: HTMLElement | null): string {
   return cssColor("--color-surface");
 }
 
+/** Pinta un grupo SVG de VexFlow (cabeza, plica, alteración, etiqueta, número de TAB). */
+function paint(root: Element, color: string): void {
+  for (const el of [root, ...root.querySelectorAll("*")]) {
+    const f = el.getAttribute("fill");
+    if (f && f !== "none" && el.tagName !== "rect") el.setAttribute("fill", color);
+    const st = el.getAttribute("stroke");
+    if (st && st !== "none") el.setAttribute("stroke", color);
+  }
+}
+
 /** Nombre accesible de un evento: "Fa sostenido 4, negra". */
 function spokenName(e: StaffEvent): string {
   const dur = { w: "redonda", h: "blanca", q: "negra", "8": "corchea" }[e.duration];
@@ -70,6 +80,8 @@ export function Staff({
   const hostRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const focusIdx = useRef(0);
+  const elsRef = useRef<{ map: Map<string, Element[]>; fg: string }>({ map: new Map(), fg: "" });
+  const [drawn, setDrawn] = useState(0);
   const clickRef = useRef(onNoteClick);
   clickRef.current = onNoteClick;
 
@@ -133,6 +145,12 @@ export function Staff({
         backgroundOf(host),
       );
 
+      // Mismo origen horizontal para notas del pentagrama y de la TAB (claves de distinto ancho).
+      if (tabStave) {
+        const x = Math.max(stave.getNoteStartX(), tabStave.getNoteStartX());
+        stave.setNoteStartX(x);
+        tabStave.setNoteStartX(x);
+      }
       stave.setContext(ctx).draw();
       if (tabStave) {
         tabStave.setContext(ctx).draw();
@@ -148,6 +166,7 @@ export function Staff({
       const tickables: InstanceType<typeof StaveNote | typeof BarNote>[] = [];
       const tabTickables: InstanceType<typeof TabNote | typeof GhostNote | typeof BarNote>[] = [];
       const noteByIdx: { note: InstanceType<typeof StaveNote>; ev: StaffEvent }[] = [];
+      const tabByIdx: { note: InstanceType<typeof TabNote>; id: string }[] = [];
       let altered = new Map<string, number>();
       let beat = 0;
 
@@ -175,24 +194,16 @@ export function Staff({
           );
         }
         note.setLedgerLineStyle({ strokeStyle: fg, lineWidth: 1.4 });
-        const mark = marks[ev.id];
-        if (mark) {
-          const c = cssColor(MARK_COLORS[mark]);
-          note.setStyle({ fillStyle: c, strokeStyle: c });
-        }
         tickables.push(note);
         noteByIdx.push({ note, ev });
 
         if (tabStave) {
-          tabTickables.push(
+          const tn =
             ev.kind === "note" && ev.tab
               ? new TabNote({ positions: [{ str: ev.tab.string, fret: ev.tab.fret }], duration: ev.duration })
-              : new GhostNote(ev.duration),
-          );
-          if (mark && ev.tab) {
-            const c = cssColor(MARK_COLORS[mark]);
-            tabTickables[tabTickables.length - 1].setStyle({ fillStyle: c, strokeStyle: c });
-          }
+              : new GhostNote(ev.duration);
+          tabTickables.push(tn);
+          if (tn instanceof TabNote) tabByIdx.push({ note: tn, id: ev.id });
         }
 
         beat += BEATS[ev.duration];
@@ -222,6 +233,19 @@ export function Staff({
       fmt.format(voices, totalW - stave.getNoteStartX() - 24);
       voice.draw(ctx, stave);
       if (tabVoice && tabStave) tabVoice.draw(ctx, tabStave);
+
+      // Elementos por id para colorear marcas sin redibujar (conserva nodos y foco).
+      const map = new Map<string, Element[]>();
+      noteByIdx.forEach(({ note, ev }) => {
+        const el = note.getSVGElement();
+        if (el) map.set(ev.id, [el]);
+      });
+      tabByIdx.forEach(({ note, id }) => {
+        const el = note.getSVGElement();
+        if (el) map.set(id, [...(map.get(id) ?? []), el]);
+      });
+      elsRef.current = { map, fg };
+      setDrawn((d) => d + 1);
 
       // Accesibilidad e interacción por nota.
       const svg = host.querySelector("svg");
@@ -258,9 +282,19 @@ export function Staff({
     return () => {
       cancelled = true;
     };
-    // marksKey resume `marks` para no redibujar por identidad del objeto.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events, drawClef, withTab, timeSignature, marksKey, width, !!onNoteClick]);
+  }, [events, drawClef, withTab, timeSignature, width, !!onNoteClick]);
+
+  // Marcas (sonando, aciertos...): sólo cambian colores de los nodos ya dibujados.
+  useEffect(() => {
+    const { map, fg } = elsRef.current;
+    for (const [id, els] of map) {
+      const mark = marks[id];
+      const c = mark ? cssColor(MARK_COLORS[mark]) : fg;
+      for (const root of els) paint(root, c);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marksKey, drawn]);
 
   const summary =
     ariaLabel ??
