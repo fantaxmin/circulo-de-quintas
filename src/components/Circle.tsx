@@ -28,10 +28,21 @@ const SEGMENTS = KEYS.map((key, i) => {
 interface Props {
   keyIndex: number;
   isMinor: boolean;
-  onSelect: (index: number) => void;
+  /** Selecciona una tonalidad: anillo exterior = mayor, interior = relativa menor. */
+  onSelect: (index: number, minor: boolean) => void;
+}
+
+/** Activa con Enter/Espacio (accesibilidad de los sectores como botones). */
+function activate(e: React.KeyboardEvent, fn: () => void): void {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    fn();
+  }
 }
 
 export function Circle({ keyIndex, isMinor, onSelect }: Props) {
+  const activeKey = KEYS[keyIndex];
+  const activeLabel = isMinor ? activeKey.relative : activeKey.tonic;
   return (
     <svg
       viewBox="0 0 400 400"
@@ -44,35 +55,34 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
         const majorActive = active && !isMinor;
         const minorActive = active && isMinor;
         return (
-          <g
-            key={index}
-            className="cursor-pointer focus:outline-none"
-            role="button"
-            tabIndex={0}
-            aria-label={`Tonalidad de ${key.tonic} mayor`}
-            onClick={() => onSelect(index)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onSelect(index);
-              }
-            }}
-          >
+          <g key={index}>
             <path
               d={majorPath}
-              className={`stroke-slate-950 stroke-2 transition-colors ${
+              role="button"
+              tabIndex={0}
+              aria-label={`${toLatin(key.tonic)} mayor`}
+              aria-pressed={majorActive}
+              onClick={() => onSelect(index, false)}
+              onKeyDown={(e) => activate(e, () => onSelect(index, false))}
+              className={`cursor-pointer stroke-slate-950 stroke-2 transition-colors focus:outline-none focus-visible:stroke-amber-200 ${
                 majorActive ? "fill-amber-500" : "fill-slate-800 hover:fill-slate-600"
               }`}
             />
             <path
               d={minorPath}
-              className={`stroke-slate-950 stroke-2 transition-colors ${
+              role="button"
+              tabIndex={0}
+              aria-label={`${toLatin(key.relative)} (relativa menor)`}
+              aria-pressed={minorActive}
+              onClick={() => onSelect(index, true)}
+              onKeyDown={(e) => activate(e, () => onSelect(index, true))}
+              className={`cursor-pointer stroke-slate-950 stroke-2 transition-colors focus:outline-none focus-visible:stroke-amber-200 ${
                 minorActive ? "fill-amber-400" : "fill-slate-700 hover:fill-slate-500"
               }`}
             />
             <text
               x={majorLabel.x}
-              y={majorLabel.y}
+              y={majorLabel.y - 2}
               textAnchor="middle"
               dominantBaseline="central"
               className={`pointer-events-none text-[17px] font-bold ${
@@ -86,7 +96,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               y={majorLabel.y + 13}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`pointer-events-none text-[9px] font-medium ${
+              className={`pointer-events-none text-[11px] font-medium ${
                 majorActive ? "fill-slate-800" : "fill-slate-300"
               }`}
             >
@@ -97,7 +107,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               y={minorLabel.y}
               textAnchor="middle"
               dominantBaseline="central"
-              className={`pointer-events-none text-[11px] font-semibold ${
+              className={`pointer-events-none text-[12px] font-semibold ${
                 minorActive ? "fill-slate-900" : "fill-slate-200"
               }`}
             >
@@ -106,6 +116,26 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
           </g>
         );
       })}
+
+      {/* Centro: tonalidad activa */}
+      <text
+        x={CX}
+        y={CY - 8}
+        textAnchor="middle"
+        dominantBaseline="central"
+        className="pointer-events-none fill-amber-400 text-[26px] font-bold"
+      >
+        {prettyEnglish(activeLabel)}
+      </text>
+      <text
+        x={CX}
+        y={CY + 16}
+        textAnchor="middle"
+        dominantBaseline="central"
+        className="pointer-events-none fill-slate-300 text-[12px] font-medium"
+      >
+        {toLatin(activeLabel.replace(/m$/, ""))} {isMinor ? "menor" : "mayor"}
+      </text>
     </svg>
   );
 }

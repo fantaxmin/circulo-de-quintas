@@ -28,6 +28,79 @@ function master(): AudioNode {
   return masterChain!;
 }
 
+// --- Eventos de reproducción (para sincronizar la UI con el audio) ---
+
+/** Una nota programada: cuándo empieza y cuánto dura, en tiempo del AudioContext. */
+export interface NoteEvent {
+  type: "note";
+  midi: number;
+  start: number;
+  duration: number;
+  /** Etiqueta de la secuencia que la originó (ej. "progression"). */
+  tag?: string;
+  /** Índice del paso dentro de la secuencia. */
+  step?: number;
+}
+
+/** Señal de corte: la UI debe apagar todo lo que esté sonando. */
+export interface StopEvent {
+  type: "stop";
+}
+
+export type PlaybackEvent = NoteEvent | StopEvent;
+type Listener = (e: PlaybackEvent) => void;
+
+const listeners = new Set<Listener>();
+
+/** Suscribe a los eventos de reproducción. Devuelve la función para desuscribir. */
+export function onPlayback(fn: Listener): () => void {
+  listeners.add(fn);
+  return () => {
+    listeners.delete(fn);
+  };
+}
+
+function emit(e: PlaybackEvent): void {
+  for (const fn of listeners) fn(e);
+}
+
+/** Tiempo actual del reloj de audio (0 si aún no existe el contexto). */
+export function audioNow(): number {
+  return ctx ? ctx.currentTime : 0;
+}
+
+/** Convierte una frecuencia a número MIDI (redondeado). */
+export function freqToMidi(freq: number): number {
+  return Math.round(69 + 12 * Math.log2(freq / 440));
+}
+
+// Voces vivas (melódicas) para poder cortarlas con stopAll().
+interface LiveVoice {
+  gain: GainNode;
+  oscs: OscillatorNode[];
+}
+const live = new Set<LiveVoice>();
+
+/** Corta en seco (con un fade corto) todas las notas programadas o sonando. */
+export function stopAll(): void {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  for (const v of live) {
+    v.gain.gain.cancelScheduledValues(t);
+    v.gain.gain.setValueAtTime(Math.max(v.gain.gain.value, 0.0001), t);
+    v.gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+    for (const o of v.oscs) {
+      try {
+        o.stop(t + 0.05);
+      } catch {
+        /* ya detenido */
+      }
+    }
+  }
+  live.clear();
+  emit({ type: "stop" });
+}
+
 /** Buffer de ruido blanco reutilizable (para caja y hi-hat). */
 function getNoise(c: AudioContext): AudioBuffer {
   if (!noiseBuffer) {
@@ -47,6 +120,7 @@ function voice(
   duration: number,
   destination: AudioNode,
   peak: number,
+  meta: { tag?: string; step?: number } = {},
 ): void {
   const g = c.createGain();
   g.connect(destination);
@@ -73,6 +147,12 @@ function voice(
   osc2.start(start);
   osc.stop(end + 0.05);
   osc2.stop(end + 0.05);
+
+  const v: LiveVoice = { gain: g, oscs: [osc, osc2] };
+  live.add(v);
+  osc.onended = () => live.delete(v);
+
+  emit({ type: "note", midi: freqToMidi(freq), start, duration, ...meta });
 }
 
 /** Reproduce un acorde (varias frecuencias) ya mismo. */
@@ -85,16 +165,24 @@ export function playChord(freqs: number[], duration = 1.3): void {
 
 /**
  * Reproduce una secuencia de acordes con `gap` segundos entre cada ataque.
+ * Corta lo que estuviera sonando antes. `tag` identifica la secuencia en los
+ * eventos (para que la UI sepa qué paso está sonando).
  * Devuelve la duración total programada (segundos).
  */
-export function playSequence(chords: number[][], gap = 0.8, duration = 0.7): number {
+export function playSequence(
+  chords: number[][],
+  gap = 0.8,
+  duration = 0.7,
+  tag?: string,
+): number {
+  stopAll();
   const c = getCtx();
   let t = c.currentTime + 0.05;
-  for (const freqs of chords) {
+  chords.forEach((freqs, step) => {
     const peak = 0.22 / Math.max(1, freqs.length);
-    for (const f of freqs) voice(c, f, t, duration, master(), peak);
+    for (const f of freqs) voice(c, f, t, duration, master(), peak, { tag, step });
     t += gap;
-  }
+  });
   return chords.length * gap;
 }
 

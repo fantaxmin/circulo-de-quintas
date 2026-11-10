@@ -12,8 +12,6 @@ import { Keyboard } from "./Keyboard";
 import { Progressions } from "./Progressions";
 import { BackingControls } from "./BackingControls";
 
-const GAP = 0.8; // segundos entre acordes en secuencias
-
 export default function App() {
   const [keyIndex, setKeyIndex] = useState(0);
   const [isMinor, setIsMinor] = useState(false);
@@ -44,10 +42,13 @@ export default function App() {
   // Detiene el audio al desmontar.
   useEffect(() => () => trackRef.current?.stop(), []);
 
-  const selectKey = useCallback((index: number) => {
+  // Tempo compartido: las secuencias siguen el BPM del backing track.
+  const beat = 60 / bpm;
+
+  const selectKey = useCallback((index: number, minor: boolean) => {
     setKeyIndex(index);
-    setIsMinor(false);
-    const v = buildView(index, false);
+    setIsMinor(minor);
+    const v = buildView(index, minor);
     playChord(triadFreqs(v.notes, 0));
   }, []);
 
@@ -69,12 +70,13 @@ export default function App() {
   }, [view]);
 
   const playScale = useCallback(() => {
-    playSequence(view.degrees.map((_, i) => triadFreqs(view.notes, i)), GAP);
-  }, [view]);
+    playSequence(view.degrees.map((_, i) => triadFreqs(view.notes, i)), beat, beat * 0.9, "degrees");
+  }, [view, beat]);
 
   const playProgression = useCallback((degrees: number[]) => {
-    playSequence(degrees.map((i) => triadFreqs(view.notes, i)), GAP);
-  }, [view]);
+    // Un acorde cada 2 pulsos (blanca).
+    playSequence(degrees.map((i) => triadFreqs(view.notes, i)), beat * 2, beat * 1.8, "progression");
+  }, [view, beat]);
 
   const toggleBacking = useCallback(() => {
     if (!trackRef.current) trackRef.current = new BackingTrack();

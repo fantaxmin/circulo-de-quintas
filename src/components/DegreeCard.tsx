@@ -17,20 +17,11 @@ interface Props {
 export function DegreeCard({ degree: d, isMinor, selected, onSelect, onPlay }: Props) {
   return (
     <div
-      className={`flex min-w-24 flex-1 cursor-pointer flex-col items-center gap-1.5 rounded-xl border bg-slate-800/60 p-3 text-center transition-colors ${
+      className={`flex min-w-24 flex-1 flex-col items-center gap-1.5 rounded-xl border bg-slate-800/60 p-3 text-center transition-colors ${
         selected ? "border-amber-500 ring-1 ring-amber-500/50" : "border-slate-700 hover:border-amber-500/40"
       }`}
-      onClick={onSelect}
-      role="button"
-      tabIndex={0}
-      aria-pressed={selected}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
     >
+      {/* Info del grado (los ⓘ quedan fuera de los botones para no anidar interactivos) */}
       <span className="flex items-center text-sm font-bold tracking-wide text-amber-400">
         {d.roman}
         <InfoIcon tip={romanTip(d, isMinor)} />
@@ -46,15 +37,20 @@ export function DegreeCard({ degree: d, isMinor, selected, onSelect, onPlay }: P
       <button
         type="button"
         className="mt-1 inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1 text-xs font-semibold text-slate-900 transition hover:bg-amber-400"
-        onClick={(e) => {
-          e.stopPropagation();
-          onPlay();
-        }}
+        onClick={onPlay}
         aria-label={`Reproducir acorde ${d.roman}`}
       >
         ▶ Acorde
       </button>
-      <span className="mt-0.5 text-[10px] text-slate-500">{selected ? "▴ modo" : "▾ ver modo"}</span>
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={selected}
+        aria-label={`${selected ? "Ocultar" : "Ver"} modo ${d.mode.name} del grado ${d.roman}`}
+        className="mt-0.5 rounded px-1.5 text-xs text-slate-400 transition hover:text-amber-300"
+      >
+        {selected ? "▴ modo" : "▾ ver modo"}
+      </button>
     </div>
   );
 }

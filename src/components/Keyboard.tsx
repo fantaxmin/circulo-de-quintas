@@ -9,7 +9,13 @@ const WHITE_LABELS = ["C", "D", "E", "F", "G", "A", "B"];
 const BLACK_AFTER: Record<number, number> = { 0: 1, 1: 3, 3: 6, 4: 8, 5: 10 };
 const OCTAVES = 2;
 
-export function Keyboard({ notes }: { notes: string[] }) {
+interface Props {
+  notes: string[];
+  /** Texto de la leyenda para las notas resaltadas (por defecto "Notas de la escala"). */
+  legend?: string;
+}
+
+export function Keyboard({ notes, legend = "Notas de la escala" }: Props) {
   const scale = new Set(notes.map(pitchClass));
   const tonicPc = pitchClass(notes[0]);
   const whiteCount = WHITE_PCS.length * OCTAVES;
@@ -59,7 +65,7 @@ export function Keyboard({ notes }: { notes: string[] }) {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-3 w-3 rounded-sm bg-emerald-400"></span>
-          Notas de la escala
+          {legend}
         </span>
       </div>
     </div>
