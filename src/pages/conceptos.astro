@@ -1,6 +1,25 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
+// Ejemplos MIDI: C4 = 60. Cada fila representa un ataque de notas simultáneas.
+const examples: Record<string, { label: string; chords: number[][]; gap?: number }[]> = {
+  circulo: [{ label: "Quinta justa: Do–Sol", chords: [[60], [67]] }],
+  notas: [
+    { label: "Semitono: Do–Do♯", chords: [[60], [61]] },
+    { label: "Tono: Do–Re", chords: [[60], [62]] },
+    { label: "Octava: Do–Do", chords: [[60], [72]] },
+  ],
+  mayor: [{ label: "Escala de Do mayor", chords: [60, 62, 64, 65, 67, 69, 71, 72].map((n) => [n]), gap: 0.35 }],
+  menor: [{ label: "Escala de La menor", chords: [57, 59, 60, 62, 64, 65, 67, 69].map((n) => [n]), gap: 0.35 }],
+  grados: [{ label: "Cadencia V–I en Do", chords: [[55, 59, 62], [60, 64, 67]], gap: 1 }],
+  acordes: [
+    { label: "Do mayor", chords: [[60, 64, 67]] },
+    { label: "Do menor", chords: [[60, 63, 67]] },
+    { label: "Do disminuido", chords: [[60, 63, 66]] },
+  ],
+  inversiones: [{ label: "Do: fundamental → 1ª → 2ª", chords: [[60, 64, 67], [64, 67, 72], [67, 72, 76]], gap: 1.2 }],
+};
+
 // Cada concepto: título y párrafos. Se renderiza como una tarjeta.
 const concepts = [
   {
@@ -102,7 +121,7 @@ const concepts = [
 ---
 
 <Layout title="Conceptos · Círculo de Quintas">
-  <main class="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-10">
+  <main class="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-10">
     <header class="text-center">
       <h1 class="text-3xl font-bold tracking-tight text-text sm:text-4xl">Conceptos</h1>
       <p class="mt-2 text-muted">
@@ -125,6 +144,20 @@ const concepts = [
                 <p class="leading-relaxed text-text">{p}</p>
               ))}
             </div>
+            {examples[c.id] && (
+              <div class="mt-5 flex flex-wrap gap-2" role="group" aria-label={`Ejemplos: ${c.title}`}>
+                {examples[c.id].map((example) => (
+                  <button
+                    type="button"
+                    data-example-chords={JSON.stringify(example.chords)}
+                    data-example-gap={example.gap ?? 0.65}
+                    class="rounded-lg border border-border px-3 py-2 text-sm font-semibold text-text transition hover:bg-surface-2"
+                  >
+                    <span aria-hidden="true">▶</span> {example.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
         ))
       }
@@ -146,3 +179,22 @@ const concepts = [
     </div>
   </main>
 </Layout>
+
+<script>
+  import { playChord, playSequence, stopAll } from "../lib/audio";
+  import { midiToFreq } from "../lib/theory";
+
+  document.querySelectorAll<HTMLButtonElement>("[data-example-chords]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const midiChords: number[][] = JSON.parse(button.dataset.exampleChords!);
+      const chords = midiChords.map((notes) => notes.map(midiToFreq));
+      const gap = Number(button.dataset.exampleGap);
+      if (chords.length === 1) {
+        stopAll();
+        playChord(chords[0]);
+      } else {
+        playSequence(chords, gap, gap * 0.9, "concept-example");
+      }
+    });
+  });
+</script>
