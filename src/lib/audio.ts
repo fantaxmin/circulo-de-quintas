@@ -18,6 +18,7 @@ function getCtx(): AudioContext {
     comp.connect(out);
     out.connect(ctx.destination);
     masterChain = comp;
+    if (instrument === "piano") queueMicrotask(() => void loadPiano());
   }
   if (ctx.state === "suspended") void ctx.resume();
   return ctx;
@@ -47,7 +48,16 @@ export interface StopEvent {
   type: "stop";
 }
 
-export type PlaybackEvent = NoteEvent | StopEvent;
+/** Un pulso (negra) del backing track, para el indicador de compás. */
+export interface BeatEvent {
+  type: "beat";
+  /** Pulso dentro del compás (0–3). */
+  beat: number;
+  start: number;
+  duration: number;
+}
+
+export type PlaybackEvent = NoteEvent | StopEvent | BeatEvent;
 type Listener = (e: PlaybackEvent) => void;
 
 const listeners = new Set<Listener>();
@@ -98,7 +108,61 @@ export function stopAll(): void {
     }
   }
   live.clear();
+  piano?.stop();
   emit({ type: "stop" });
+}
+
+// --- Instrumento: piano con samples (smplr) o sinte de osciladores ---
+
+export type InstrumentKind = "piano" | "synth";
+export type PianoStatus = "idle" | "loading" | "ready" | "error";
+
+type Piano = { start: (e: { note: number; time: number; duration: number; velocity: number }) => unknown; stop: () => void };
+
+let instrument: InstrumentKind = "piano";
+let piano: Piano | null = null;
+let pianoStatus: PianoStatus = "idle";
+const statusListeners = new Set<(s: PianoStatus) => void>();
+
+function setPianoStatus(s: PianoStatus): void {
+  pianoStatus = s;
+  for (const fn of statusListeners) fn(s);
+}
+
+/** Suscribe al estado de carga del piano. */
+export function onPianoStatus(fn: (s: PianoStatus) => void): () => void {
+  statusListeners.add(fn);
+  fn(pianoStatus);
+  return () => {
+    statusListeners.delete(fn);
+  };
+}
+
+export function getInstrument(): InstrumentKind {
+  return instrument;
+}
+
+/** Cambia el instrumento; si es piano y no está cargado, empieza a cargarlo. */
+export function setInstrument(kind: InstrumentKind): void {
+  instrument = kind;
+  if (kind === "piano" && ctx) void loadPiano();
+}
+
+/**
+ * Carga perezosa del piano muestreado. Mientras carga (o si falla, p.ej. sin
+ * red) se usa el sinte de osciladores como respaldo.
+ */
+function loadPiano(): Promise<void> {
+  if (pianoStatus === "loading" || pianoStatus === "ready" || !ctx) return Promise.resolve();
+  setPianoStatus("loading");
+  const c = ctx;
+  return import("smplr")
+    .then(({ SplendidGrandPiano }) => SplendidGrandPiano(c, { destination: master(), volume: 110 }).load)
+    .then((p) => {
+      piano = p as unknown as Piano;
+      setPianoStatus("ready");
+    })
+    .catch(() => setPianoStatus("error"));
 }
 
 /** Buffer de ruido blanco reutilizable (para caja y hi-hat). */
@@ -122,6 +186,16 @@ function voice(
   peak: number,
   meta: { tag?: string; step?: number } = {},
 ): void {
+  const midi = freqToMidi(freq);
+  emit({ type: "note", midi, start, duration, ...meta });
+
+  if (instrument === "piano" && piano) {
+    // peak va de ~0.03 (acordes grandes) a 0.22 (nota sola).
+    const velocity = Math.round(70 + Math.min(1, peak / 0.22) * 30);
+    piano.start({ note: midi, time: start, duration, velocity });
+    return;
+  }
+
   const g = c.createGain();
   g.connect(destination);
 
@@ -151,8 +225,6 @@ function voice(
   const v: LiveVoice = { gain: g, oscs: [osc, osc2] };
   live.add(v);
   osc.onended = () => live.delete(v);
-
-  emit({ type: "note", midi: freqToMidi(freq), start, duration, ...meta });
 }
 
 /** Reproduce un acorde (varias frecuencias) ya mismo. */
@@ -364,6 +436,9 @@ export class BackingTrack {
   }
 
   private scheduleStep(step: number, time: number): void {
+    if (step % 2 === 0) {
+      emit({ type: "beat", beat: step / 2, start: time, duration: 60 / this.bpm });
+    }
     const ev = PATTERNS[this.genre][step];
     if (ev.kick) kick(this.c, time, this.out, ev.kick);
     if (ev.snare) snare(this.c, time, this.out, ev.snare);

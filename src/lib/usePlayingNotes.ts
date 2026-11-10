@@ -8,7 +8,7 @@ import { audioNow, onPlayback, type NoteEvent } from "./audio";
 export interface Playing {
   /** Números MIDI que suenan ahora mismo. */
   notes: Set<number>;
-  /** Paso activo por tag de secuencia (ej. { progression: 2 }). */
+  /** Paso activo por tag de secuencia (ej. { progression: 2 }). El tag "beat" es el pulso del backing (0–3). */
   steps: Record<string, number>;
 }
 
@@ -30,7 +30,7 @@ export function usePlayingNotes(): Playing {
       const steps: Record<string, number> = {};
       for (const e of events.current) {
         if (e.start > now) continue;
-        notes.add(e.midi);
+        if (e.midi >= 0) notes.add(e.midi);
         if (e.tag !== undefined && e.step !== undefined) steps[e.tag] = e.step;
       }
 
@@ -38,7 +38,7 @@ export function usePlayingNotes(): Playing {
       const key = [...notes].sort().join(",") + "|" + JSON.stringify(steps);
       if (key !== lastKey.current) {
         lastKey.current = key;
-        setPlaying(notes.size ? { notes, steps } : EMPTY);
+        setPlaying(notes.size || Object.keys(steps).length ? { notes, steps } : EMPTY);
       }
 
       raf.current = events.current.length ? requestAnimationFrame(tick) : null;
@@ -49,8 +49,12 @@ export function usePlayingNotes(): Playing {
     };
 
     const off = onPlayback((e) => {
-      if (e.type === "stop") events.current = [];
-      else events.current.push(e);
+      if (e.type === "stop") {
+        // Corta notas pero conserva los pulsos del backing track.
+        events.current = events.current.filter((ev) => ev.tag === "beat");
+      } else if (e.type === "beat") {
+        events.current.push({ type: "note", midi: -1, start: e.start, duration: e.duration, tag: "beat", step: e.beat });
+      } else events.current.push(e);
       ensureLoop();
     });
 
