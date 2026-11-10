@@ -50,7 +50,14 @@ function FretRound({ instrument, maxFret }: { instrument: InstrumentId; maxFret:
     ...(solved ? valid.map((pos) => ({ pos, kind: "target" as const })) : []),
   ];
 
-  useEffect(() => { if (question) boardRef.current?.querySelector<SVGElement>('[data-cell="1-0"]')?.focus(); }, [question]);
+  useEffect(() => {
+    if (!question) return;
+    // Vincula la descripción a las casillas enfocables sin cambiar la API de Fretboard.
+    boardRef.current?.querySelectorAll<SVGElement>("[data-cell]").forEach((cell) => {
+      cell.setAttribute("aria-describedby", "fret-quiz-question fret-quiz-keyboard");
+    });
+    boardRef.current?.querySelector<SVGElement>('[data-cell="1-0"]')?.focus();
+  }, [question]);
   useEffect(() => { if (solved) nextButton.current?.focus(); }, [solved]);
 
   const next = () => {
@@ -59,14 +66,16 @@ function FretRound({ instrument, maxFret }: { instrument: InstrumentId; maxFret:
     setQuestion(pickNote(pool, question));
   };
 
-  if (!question) return <button type="button" className={button} onClick={next}>Comenzar práctica</button>;
-
-  return <div className="min-w-0 space-y-4">
+  return <>
+    <p id="fret-quiz-question" className="sr-only" aria-live="polite" aria-atomic="true">
+      {question ? `${staffLocation({ ...question, midi: question.midi + inst.writtenShift }, inst.clef)} Suena una octava más grave.` : ""}
+    </p>
+    {!question ? <button type="button" className={button} onClick={next}>Comenzar práctica</button> : <div className="min-w-0 space-y-4">
     <Staff events={events} instrument={instrument} showTab={false}
       ariaLabel={`${staffLocation({ ...question, midi: question.midi + inst.writtenShift }, inst.clef)} Suena una octava más grave.`}
       marks={attempt ? { "fret-quiz-note": solved ? "correct" : "wrong" } : {}} />
     <p className="text-sm text-muted" id="fret-quiz-keyboard">Con teclado: Tab entra en el diapasón, las flechas cambian de cuerda o traste y Enter o Espacio eligen una posición.</p>
-    <div ref={boardRef} className="max-w-full overflow-x-auto" role="group" aria-label="Elige dónde tocar la nota" aria-describedby="fret-quiz-keyboard">
+    <div ref={boardRef} className="max-w-full overflow-x-auto" role="group" aria-label="Elige dónde tocar la nota" aria-describedby="fret-quiz-question fret-quiz-keyboard">
       <Fretboard instrument={instrument} fretRange={[0, maxFret]} reveal="none" showNames={false}
         marks={marks} sounding={playing.steps["fret-quiz"] !== undefined && attempt ? [attempt.pos] : []}
         onPress={(pos) => {
@@ -84,5 +93,6 @@ function FretRound({ instrument, maxFret }: { instrument: InstrumentId; maxFret:
     </p>
     {solved && <p className="text-sm leading-relaxed text-muted">Posiciones válidas: {valid.map((pos) => `cuerda ${pos.string}, traste ${pos.fret}`).join(" · ")}.</p>}
     <button type="button" ref={nextButton} className={button} disabled={!solved} onClick={next}>Siguiente nota</button>
-  </div>;
+  </div>}
+  </>;
 }
