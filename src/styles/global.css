@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+@theme {
+  --color-surface: #0f172a;
+  --color-surface-2: #1e293b;
+  --color-border: #475569;
+  --color-text: #f1f5f9;
+  --color-muted: #a5b4c8;
+  /* Ámbar: selección, tónica y acción principal. */
+  --color-accent: #fbbf24;
+  /* Cian: exclusivamente notas o audio que están sonando. */
+  --color-playing: #67e8f9;
+  --font-sans: "Segoe UI", "Noto Sans", sans-serif;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    scrollbar-color: var(--color-border) var(--color-surface);
+    accent-color: var(--color-accent);
+    caret-color: var(--color-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-surface);
+  }
+}
