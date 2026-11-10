@@ -50,8 +50,14 @@ export function Keyboard({ notes, legend = "Notas de la escala", playing }: Prop
   const blackW = whiteW * 0.62;
 
   const keyProps = (midi: number, label: string) => ({
-    role: "button" as const,
+    type: "button" as const,
     "aria-label": label,
+    // Solo el contenedor entra en el orden de Tab; las teclas se activan con
+    // tecnología asistiva (click sin puntero, detail === 0).
+    tabIndex: -1,
+    onClick: (e: React.MouseEvent) => {
+      if (e.detail === 0) playNote(midi);
+    },
     onPointerDown: (e: React.PointerEvent) => {
       e.preventDefault();
       (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
@@ -72,7 +78,7 @@ export function Keyboard({ notes, legend = "Notas de la escala", playing }: Prop
       const pc = WHITE_PCS[i];
       const midi = BASE_MIDI + o * 12 + pc;
       whites.push(
-        <div
+        <button
           key={`w${w}`}
           {...keyProps(midi, `${WHITE_LABELS[i]}${4 + o}`)}
           className={`relative flex flex-1 cursor-pointer touch-none items-end justify-center rounded-b-md border border-slate-400 pb-1 text-[11px] font-semibold transition-[background-color,transform] duration-75 ${whiteClass(
@@ -83,7 +89,7 @@ export function Keyboard({ notes, legend = "Notas de la escala", playing }: Prop
           )}`}
         >
           {WHITE_LABELS[i]}
-        </div>,
+        </button>,
       );
 
       const blackPc = BLACK_AFTER[i];
@@ -91,7 +97,7 @@ export function Keyboard({ notes, legend = "Notas de la escala", playing }: Prop
         const left = (w + 1) * whiteW - blackW / 2;
         const bMidi = BASE_MIDI + o * 12 + blackPc;
         blacks.push(
-          <div
+          <button
             key={`b${w}`}
             {...keyProps(bMidi, `${WHITE_LABELS[i]}♯${4 + o}`)}
             className={`absolute top-0 z-10 h-[62%] cursor-pointer touch-none rounded-b-md border border-slate-700 transition-[background-color,transform] duration-75 ${blackClass(

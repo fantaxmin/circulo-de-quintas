@@ -6,6 +6,7 @@ import { buildScale, scaleFreqs, scaleIntervals, scaleSteps } from "../lib/theor
 import type { ScaleStep } from "../lib/theory";
 import { playSequence } from "../lib/audio";
 import { usePlayingNotes } from "../lib/usePlayingNotes";
+import { MotionConfig, motion } from "motion/react";
 import { prettyEnglish, toLatin } from "../lib/music";
 import { Keyboard } from "./Keyboard";
 
@@ -31,6 +32,7 @@ export default function ScalesExplorer() {
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="flex w-full flex-col gap-6">
       {/* Selectores */}
       <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface-2 p-4 sm:flex-row sm:items-end">
@@ -108,7 +110,13 @@ export default function ScalesExplorer() {
             const stepSounding = playing.steps.scale === i && i > 0;
             const iv = isOctave ? { symbol: "8", name: "Octava" } : intervals[i];
             return (
-              <div key={i} className="flex items-center">
+              <motion.div
+                key={`${root}-${scaleId}-${i}`}
+                className="flex items-center"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.03 }}
+              >
                 {i > 0 && (
                   <div className="flex w-9 flex-col items-center sm:w-11">
                     <StepBadge step={steps[i - 1]} small />
@@ -136,7 +144,7 @@ export default function ScalesExplorer() {
                     {iv.symbol}
                   </span>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -175,6 +183,7 @@ export default function ScalesExplorer() {
         <Keyboard notes={notes} playing={playing.notes} />
       </div>
     </div>
+    </MotionConfig>
   );
 }
 

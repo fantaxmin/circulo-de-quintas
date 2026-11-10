@@ -10,14 +10,16 @@ export const progressionTag = (name: string) => `prog:${name}`;
 
 interface Props {
   view: View;
-  /** Reproduce la progresión; `loop` la repite varias vueltas. */
+  /** Reproduce la progresión; con `loop` se repite hasta detenerla o desactivar el loop. */
   onPlay: (name: string, degrees: number[], loop: boolean) => void;
   onStop: () => void;
+  /** Avisa cuando se activa/desactiva el loop (afecta a la progresión que ya suena). */
+  onLoopChange: (on: boolean) => void;
   /** Pasos activos por tag (de usePlayingNotes). */
   steps: Record<string, number>;
 }
 
-export function Progressions({ view, onPlay, onStop, steps }: Props) {
+export function Progressions({ view, onPlay, onStop, onLoopChange, steps }: Props) {
   const list = view.isMinor ? MINOR_PROGRESSIONS : MAJOR_PROGRESSIONS;
   const [loop, setLoop] = useState(false);
 
@@ -27,7 +29,10 @@ export function Progressions({ view, onPlay, onStop, steps }: Props) {
         <input
           type="checkbox"
           checked={loop}
-          onChange={(e) => setLoop(e.target.checked)}
+          onChange={(e) => {
+            setLoop(e.target.checked);
+            onLoopChange(e.target.checked);
+          }}
           className="accent-accent"
         />
         Repetir en loop

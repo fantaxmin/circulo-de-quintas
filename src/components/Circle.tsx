@@ -72,7 +72,7 @@ export function Circle({ keyIndex, isMinor, onSelect }: Props) {
               d={minorPath}
               role="button"
               tabIndex={0}
-              aria-label={`${toLatin(key.relative)} (relativa menor)`}
+              aria-label={`${toLatin(key.relative.replace(/m$/, ""))} menor`}
               aria-pressed={minorActive}
               onClick={() => onSelect(index, true)}
               onKeyDown={(e) => activate(e, () => onSelect(index, true))}

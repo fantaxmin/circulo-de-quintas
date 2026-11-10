@@ -12,6 +12,7 @@
     "@astrojs/react": "^5.0.7",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.6",
+    "motion": "^14.10.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "smplr": "^1.2.0",

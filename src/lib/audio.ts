@@ -108,6 +108,9 @@ export function stopAll(): void {
     }
   }
   live.clear();
+  // Cancela también las notas del piano ya programadas a futuro.
+  for (const stop of pianoStops) stop(t);
+  pianoStops.clear();
   piano?.stop();
   emit({ type: "stop" });
 }
@@ -117,7 +120,12 @@ export function stopAll(): void {
 export type InstrumentKind = "piano" | "synth";
 export type PianoStatus = "idle" | "loading" | "ready" | "error";
 
-type Piano = { start: (e: { note: number; time: number; duration: number; velocity: number }) => unknown; stop: () => void };
+type Piano = {
+  start: (e: { note: number; time: number; duration: number; velocity: number }) => (time?: number) => void;
+  stop: () => void;
+};
+// Canceladores de las notas del piano programadas (se limpian al terminar).
+const pianoStops = new Set<(time?: number) => void>();
 
 let instrument: InstrumentKind = "piano";
 let piano: Piano | null = null;
@@ -192,7 +200,9 @@ function voice(
   if (instrument === "piano" && piano) {
     // peak va de ~0.03 (acordes grandes) a 0.22 (nota sola).
     const velocity = Math.round(70 + Math.min(1, peak / 0.22) * 30);
-    piano.start({ note: midi, time: start, duration, velocity });
+    const stop = piano.start({ note: midi, time: start, duration, velocity });
+    pianoStops.add(stop);
+    window.setTimeout(() => pianoStops.delete(stop), (start - c.currentTime + duration + 1) * 1000);
     return;
   }
 
@@ -228,11 +238,37 @@ function voice(
 }
 
 /** Reproduce un acorde (varias frecuencias) ya mismo. */
-export function playChord(freqs: number[], duration = 1.3): void {
+export function playChord(
+  freqs: number[],
+  duration = 1.3,
+  meta: { tag?: string; step?: number } = {},
+): void {
   const c = getCtx();
   const t = c.currentTime + 0.02;
   const peak = 0.22 / Math.max(1, freqs.length); // normaliza por nº de notas
-  for (const f of freqs) voice(c, f, t, duration, master(), peak);
+  for (const f of freqs) voice(c, f, t, duration, master(), peak, meta);
+}
+
+/**
+ * Programa una secuencia de acordes desde el instante `at` (reloj de audio),
+ * sin cortar lo que ya suena. `stepOffset` numera los pasos (útil en loops).
+ * Devuelve el instante en que termina la secuencia.
+ */
+export function scheduleSequence(
+  chords: number[][],
+  gap: number,
+  duration: number,
+  opts: { tag?: string; at?: number; stepOffset?: number } = {},
+): number {
+  const c = getCtx();
+  let t = opts.at ?? c.currentTime + 0.05;
+  chords.forEach((freqs, i) => {
+    const peak = 0.22 / Math.max(1, freqs.length);
+    const meta = { tag: opts.tag, step: (opts.stepOffset ?? 0) + i };
+    for (const f of freqs) voice(c, f, t, duration, master(), peak, meta);
+    t += gap;
+  });
+  return t;
 }
 
 /**
@@ -248,13 +284,7 @@ export function playSequence(
   tag?: string,
 ): number {
   stopAll();
-  const c = getCtx();
-  let t = c.currentTime + 0.05;
-  chords.forEach((freqs, step) => {
-    const peak = 0.22 / Math.max(1, freqs.length);
-    for (const f of freqs) voice(c, f, t, duration, master(), peak, { tag, step });
-    t += gap;
-  });
+  scheduleSequence(chords, gap, duration, { tag });
   return chords.length * gap;
 }
 
