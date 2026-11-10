@@ -101,7 +101,9 @@ export function Staff({
       host.innerHTML = "";
 
       const fg = cssColor("--color-text");
-      const totalW = Math.max(width, 90 + events.length * NOTE_W);
+      // Pocas notas (ejercicios): pentagrama corto en vez de estirarlo a todo el ancho.
+      const totalW =
+        events.length <= 2 ? Math.min(width, 120 + events.length * 70) : Math.max(width, 90 + events.length * NOTE_W);
 
       // Primero se crean los pentagramas para saber la altura total; luego se dibuja.
       const stave = new Stave(0, 10, totalW - 1);
