@@ -1,0 +1,70 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { InstrumentLesson } from "../../components/lessons/InstrumentLesson";
+---
+
+<Layout title="Del diapasón a la partitura · Círculo de Quintas">
+  <main class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+    <header class="mb-10">
+      <a href="/partitura" class="text-sm text-accent underline underline-offset-4">Leer partitura: primeros pasos</a>
+      <h1 class="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Del diapasón a la partitura</h1>
+      <p class="mt-4 text-lg leading-relaxed text-muted">Una nota escrita, un sonido y un lugar donde tocarlo. Conecta esas tres ideas en guitarra estándar o bajo de cuatro cuerdas.</p>
+      <nav aria-label="En esta lección" class="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-accent">
+        <a href="#aire" class="underline underline-offset-4">Cuerdas al aire</a>
+        <a href="#octava" class="underline underline-offset-4">El 8 bajo la clave</a>
+        <a href="#trastes" class="underline underline-offset-4">Trastes y notas</a>
+        <a href="#unisonos" class="underline underline-offset-4">Una nota, varias cuerdas</a>
+        <a href="#escalas" class="underline underline-offset-4">Primeras escalas</a>
+      </nav>
+    </header>
+
+    <section id="aire" class="scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">Empieza con las cuerdas al aire</h2>
+      <p class="mt-4 leading-relaxed">Tocar <strong>al aire</strong> significa hacer sonar la cuerda sin pisar ningún traste. La cuerda 1 es la más aguda; la 6 en guitarra y la 4 en bajo son las más graves. El ejemplo recorre las cuerdas de grave a aguda.</p>
+      <p class="mt-4 mb-5 leading-relaxed text-muted">En la TAB, cada línea es una cuerda: la de arriba es la más aguda. El número indica el traste, no un dedo; 0 significa al aire. El pentagrama indica la altura y la duración, y la TAB propone dónde tocarla.</p>
+      <InstrumentLesson client:load mode="open" />
+    </section>
+
+    <section id="octava" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">¿Por qué hay un 8 debajo de la clave?</h2>
+      <p class="mt-4 leading-relaxed">En estas partituras, la guitarra usa clave de sol y el bajo, clave de fa, ambas con un <strong>8 debajo</strong>. Significa que el instrumento <strong>suena una octava más grave de lo escrito</strong>. Esta convención permite leer con menos líneas adicionales.</p>
+      <p class="mt-4 leading-relaxed">La sexta cuerda de guitarra al aire suena Mi2 y se escribe Mi3. La cuarta cuerda de bajo al aire suena Mi1 y se escribe Mi2. El audio de los ejemplos reproduce la altura real.</p>
+      <p class="mt-4 leading-relaxed text-muted">No tienes que cambiar de traste para compensarlo: lee la nota y toca la posición indicada. En muchas partituras el 8 se omite porque la transposición ya se da por entendida para estos instrumentos.</p>
+    </section>
+
+    <section id="trastes" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">Cada traste sube un semitono</h2>
+      <p class="mt-4 leading-relaxed">En una misma cuerda, avanzar un traste hacia el cuerpo del instrumento sube un semitono. Dos trastes son un tono. Entre <strong>Mi–Fa</strong> y <strong>Si–Do</strong> hay un semitono; entre los demás pares de notas naturales consecutivas hay un tono.</p>
+      <p class="mt-4 leading-relaxed">En una cuerda afinada en Mi: al aire es Mi, traste 1 es Fa, traste 2 es Fa♯, traste 3 es Sol, traste 4 es Sol♯ y traste 5 es La. Los trastes sin una nota natural siguen teniendo sonido: corresponden a notas alteradas.</p>
+      <h3 class="mt-6 text-lg font-semibold">Encuentra las notas naturales entre los trastes 0 y 5</h3>
+      <p class="mt-3 mb-5 leading-relaxed text-muted">Elige una cuerda y recorre sus notas marcadas. Observa cuándo avanzas un traste y cuándo dos. Sus nombres coinciden en guitarra y bajo para las cuerdas Mi, La, Re y Sol, aunque su registro cambia.</p>
+      <InstrumentLesson client:visible mode="natural" />
+    </section>
+
+    <section id="unisonos" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">La misma nota en varias cuerdas</h2>
+      <p class="mt-4 leading-relaxed">Una altura puede tocarse en distintos lugares del diapasón. En guitarra, la primera cuerda al aire y la segunda en el traste 5 producen el mismo Mi4. En bajo, la cuarta cuerda en el traste 5 y la tercera al aire producen el mismo La1.</p>
+      <p class="mt-4 mb-5 leading-relaxed text-muted">Escucha ambas posiciones. La nota conserva su altura en el pentagrama; la TAB cambia. El timbre puede variar según la cuerda.</p>
+      <InstrumentLesson client:visible mode="unison" />
+      <p class="mt-4 text-sm leading-relaxed text-muted">Compartir nombre no siempre significa compartir altura: los Mi de la sexta y primera cuerda de guitarra al aire están separados por dos octavas. Un unísono tiene el mismo nombre y la misma octava.</p>
+    </section>
+
+    <section id="escalas" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">Tus primeros pasos con Do mayor y La menor</h2>
+      <p class="mt-4 leading-relaxed"><strong>Do mayor</strong> recorre Do, Re, Mi, Fa, Sol, La, Si y Do. <strong>La menor natural</strong> usa las mismas notas, empezando en La: La, Si, Do, Re, Mi, Fa, Sol y La. Ninguna necesita sostenidos ni bemoles.</p>
+      <ol class="my-5 list-decimal space-y-2 pl-6 leading-relaxed">
+        <li>Escucha la escala y sigue la nota que está sonando.</li>
+        <li>Localiza su cuerda y traste en la TAB y en el diapasón.</li>
+        <li>Toca despacio en tu instrumento y vuelve a mirar la nota escrita.</li>
+      </ol>
+      <InstrumentLesson client:visible mode="scales" />
+    </section>
+
+    <!-- TODO Ola 2: isla del ejercicio «ver nota → tocarla» con respuesta oculta y feedback de posición. -->
+
+    <footer class="mt-10 flex flex-wrap gap-3 border-t border-border pt-8">
+      <a href="/partitura" class="rounded-lg border border-border px-5 py-3 text-sm font-semibold hover:bg-surface-2">Repasar la lectura</a>
+      <a href="/escalas" class="rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-surface hover:bg-accent/90">Explorar más escalas</a>
+    </footer>
+  </main>
+</Layout>

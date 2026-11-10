@@ -6,6 +6,7 @@ const links = [
   { href: "/escalas", label: "Escalas" },
   { href: "/acordes", label: "Acordes" },
   { href: "/conceptos", label: "Conceptos" },
+  { href: "/partitura", label: "Partitura" },
 ];
 ---
 
@@ -17,7 +18,7 @@ const links = [
     <ul class="flex w-full min-w-0 items-center gap-1 overflow-x-auto pb-1 text-sm sm:w-auto sm:pb-0">
       {
         links.map((l) => {
-          const active = path === l.href;
+          const active = path === l.href || (l.href === "/partitura" && path.startsWith("/partitura/"));
           return (
             <li class="shrink-0">
               <a
@@ -27,7 +28,7 @@ const links = [
                     ? "bg-accent/15 font-semibold text-accent"
                     : "text-text hover:bg-surface-2 hover:text-text"
                 }`}
-                aria-current={active ? "page" : undefined}
+                aria-current={active ? (path === l.href ? "page" : "location") : undefined}
               >
                 {l.label}
               </a>

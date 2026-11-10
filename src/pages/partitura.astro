@@ -1,0 +1,92 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { LessonStaff } from "../components/lessons/LessonStaff";
+import { C_MAJOR_TREBLE } from "../lib/examples";
+import type { Duration, StaffEvent } from "../lib/notation";
+
+const rhythms: { name: string; duration: Duration; beats: number; detail: string }[] = [
+  { name: "Redonda", duration: "w", beats: 4, detail: "Cabeza hueca, sin plica. Su silencio cuelga de la cuarta línea." },
+  { name: "Blanca", duration: "h", beats: 2, detail: "Cabeza hueca con plica. Su silencio se apoya sobre la tercera línea." },
+  { name: "Negra", duration: "q", beats: 1, detail: "Cabeza rellena con plica. Su silencio tiene forma de trazo quebrado." },
+];
+const rhythmEvents = (duration: Duration): StaffEvent[] => [
+  { id: "sound", kind: "note", spelling: "C", writtenMidi: 60, duration, label: "Do" },
+  { id: "silence", kind: "rest", duration },
+];
+---
+
+<Layout title="Leer partitura: primeros pasos · Círculo de Quintas">
+  <main class="mx-auto max-w-3xl px-4 py-10 sm:py-14">
+    <header class="mb-10">
+      <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Leer partitura: primeros pasos</h1>
+      <p class="mt-4 text-lg leading-relaxed text-muted">La posición de una nota te dice qué altura tocar; su figura, cuánto dura. Empieza con Do mayor y escucha cada paso.</p>
+      <nav aria-label="En esta lección" class="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-accent">
+        <a href="#pentagrama" class="underline underline-offset-4">Pentagrama y claves</a>
+        <a href="#notas" class="underline underline-offset-4">Líneas y espacios</a>
+        <a href="#figuras" class="underline underline-offset-4">Figuras y silencios</a>
+        <a href="#alteraciones" class="underline underline-offset-4">Alteraciones</a>
+      </nav>
+    </header>
+
+    <section id="pentagrama" class="scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">El pentagrama y las claves</h2>
+      <div class="mt-4 space-y-4 leading-relaxed">
+        <p>El <strong>pentagrama</strong> tiene cinco líneas y cuatro espacios. Se cuentan de abajo hacia arriba. Una nota puede estar sobre una línea o en un espacio; al subir al siguiente lugar, avanzas al siguiente nombre: Do, Re, Mi, Fa, Sol, La, Si y otra vez Do.</p>
+        <p>Cuando la nota queda fuera del pentagrama, se añaden <strong>líneas adicionales</strong>: pequeños trazos que prolongan la misma secuencia. El Do central, Do4, está en la primera línea adicional por debajo de la clave de sol.</p>
+        <p>La <strong>clave</strong> fija el nombre de una línea y permite deducir las demás. Cambiar de clave cambia cómo se lee una misma posición en el papel.</p>
+      </div>
+      <dl class="mt-5 grid gap-5 sm:grid-cols-2">
+        <div class="rounded-xl border border-border p-5">
+          <dt class="text-lg font-semibold">Clave de sol</dt>
+          <dd class="mt-2 leading-relaxed text-muted">Señala Sol4 en la segunda línea. Se usa para registros agudos y para la guitarra, con la indicación de octava que veremos en la guía del diapasón.</dd>
+        </div>
+        <div class="rounded-xl border border-border p-5">
+          <dt class="text-lg font-semibold">Clave de fa</dt>
+          <dd class="mt-2 leading-relaxed text-muted">Sus dos puntos rodean la cuarta línea: Fa3. Se usa para registros graves; en esta guía, el bajo la lleva con un 8 debajo.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section id="notas" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">Notas en líneas y espacios</h2>
+      <p class="mt-4 leading-relaxed">En clave de sol, las líneas son <strong>Mi, Sol, Si, Re, Fa</strong>; los espacios, <strong>Fa, La, Do, Mi</strong>, siempre de abajo hacia arriba. En clave de fa, las líneas son <strong>Sol, Si, Re, Fa, La</strong> y los espacios, <strong>La, Do, Mi, Sol</strong>.</p>
+      <p class="mt-4 mb-5 leading-relaxed text-muted">Sigue Do mayor de Do4 a Do5 en clave de sol. El primer Do necesita una línea adicional; Re queda justo debajo del pentagrama y Mi ocupa su primera línea. Pulsa las notas o sus botones para escucharlas.</p>
+      <LessonStaff client:load lessonId="reading-c-major" events={C_MAJOR_TREBLE} ariaLabel="Do mayor en clave de sol: Do4, Re4, Mi4, Fa4, Sol4, La4, Si4, Do5" />
+      <p class="mt-4 text-sm leading-relaxed text-muted">Aquí las notas suenan a la altura escrita: no hay transposición de octava. Do4 es el Do central; el número identifica la octava, no la cuerda ni el traste.</p>
+    </section>
+
+    <section id="figuras" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">Figuras y silencios</h2>
+      <p class="mt-4 leading-relaxed">La figura indica la duración. En estos ejemplos, una negra vale un pulso: la redonda dura cuatro pulsos y la blanca, dos. Un <strong>silencio</strong> ocupa tiempo sin que suene una nota; sigue contando durante él.</p>
+      <p class="mt-4 leading-relaxed text-muted">Escucha a 100 pulsos por minuto: cada ejemplo toca un Do y después deja un silencio de igual duración. Cuenta «1, 2, 3, 4» para la redonda, «1, 2» para la blanca y «1» para la negra.</p>
+      <div class="mt-6 space-y-8">
+        {rhythms.map((rhythm) => <div>
+          <h3 class="text-lg font-semibold">{rhythm.name} · {rhythm.beats === 1 ? "1 pulso" : `${rhythm.beats} pulsos`}</h3>
+          <p class="mt-2 mb-4 text-sm leading-relaxed text-muted">{rhythm.detail}</p>
+          <LessonStaff client:visible lessonId={`rhythm-${rhythm.duration}`} events={rhythmEvents(rhythm.duration)} ariaLabel={`${rhythm.name} de Do y su silencio: ${rhythm.beats} pulsos cada uno`} />
+        </div>)}
+      </div>
+      <p class="mt-6 leading-relaxed">La <strong>corchea</strong> dura medio pulso cuando la negra vale uno. La reconocerás por su corchete o por la barra que une varias corcheas; la practicaremos más adelante.</p>
+    </section>
+
+    <section id="alteraciones" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">Alteraciones: ♯, ♭ y ♮</h2>
+      <p class="mt-4 leading-relaxed">Una alteración se escribe antes de la nota y modifica su altura sin cambiar su línea o espacio.</p>
+      <dl class="mt-5 space-y-4 leading-relaxed">
+        <div><dt class="font-semibold">♯ Sostenido</dt><dd class="text-muted">Sube un semitono: Fa♯ está un semitono por encima de Fa.</dd></div>
+        <div><dt class="font-semibold">♭ Bemol</dt><dd class="text-muted">Baja un semitono: Si♭ está un semitono por debajo de Si.</dd></div>
+        <div><dt class="font-semibold">♮ Becuadro</dt><dd class="text-muted">Cancela una alteración y devuelve la nota a su altura natural: Fa♯ seguido de Fa♮ vuelve a Fa.</dd></div>
+      </dl>
+      <p class="mt-4 leading-relaxed">Una alteración accidental afecta a las siguientes notas del mismo nombre y octava hasta la barra de compás, salvo que otra alteración la cambie. La armadura, al comienzo del pentagrama, establece las alteraciones de la tonalidad. Para empezar, Do mayor no necesita ninguna.</p>
+      <p class="mt-4 leading-relaxed text-muted">En los ejemplos de instrumento repetimos las alteraciones junto a las notas para facilitar la lectura. Si ves letras: C = Do, D = Re, E = Mi, F = Fa, G = Sol, A = La y B = Si.</p>
+    </section>
+
+    <!-- TODO Ola 2: isla del ejercicio «¿qué nota es?», 10 rondas sin puntuación persistente. -->
+
+    <aside class="mt-10 rounded-2xl border border-accent/50 bg-surface-2 p-6 sm:p-8" aria-label="Siguiente lección">
+      <h2 class="text-xl font-bold">Lleva estas notas a tu instrumento</h2>
+      <p class="mt-3 leading-relaxed text-muted">Relaciona pentagrama, tablatura y diapasón. Empieza por las cuerdas al aire de guitarra o bajo y encuentra tu primera escala.</p>
+      <a href="/partitura/diapason" class="mt-5 inline-block rounded-lg bg-accent px-5 py-3 font-semibold text-surface hover:bg-accent/90">Del diapasón a la partitura</a>
+    </aside>
+  </main>
+</Layout>
