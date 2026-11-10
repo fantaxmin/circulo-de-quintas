@@ -238,3 +238,10 @@ function collect(
   out.sort((a, b) => a.score - b.score || a.window[0] - b.window[0] || a.startMidi - b.startMidi);
   return out;
 }
+
+const LATIN: Record<string, string> = { C: "Do", D: "Re", E: "Mi", F: "Fa", G: "Sol", A: "La", B: "Si" };
+
+/** Nombre latino de una ortografía, incluidas dobles alteraciones: "F##" -> "Fa𝄪". */
+export function latinSpelling(spelling: string): string {
+  return LATIN[spelling[0]] + prettySpelling(spelling).slice(1);
+}

@@ -2,7 +2,7 @@
 // Se derivan del mismo modelo que el explorador de escalas.
 
 import { SCALE_DEFS } from "./data";
-import { INSTRUMENTS, scalePositions, type InstrumentId, type Position } from "./fretboard";
+import { INSTRUMENTS, latinSpelling, scalePositions, type InstrumentId, type Position } from "./fretboard";
 import type { StaffEvent } from "./notation";
 import { toLatin } from "./music";
 
@@ -22,7 +22,7 @@ export function positionEvents(pos: Position, duration: StaffEvent["duration"] =
     writtenMidi: t.writtenMidi,
     duration,
     tab: { string: t.string, fret: t.fret },
-    label: toLatin(t.spelling.replace(/##|bb/, (m) => m[0])),
+    label: latinSpelling(t.spelling),
   }));
 }
 

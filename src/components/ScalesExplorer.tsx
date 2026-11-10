@@ -1,8 +1,10 @@
 // Explorador de escalas: elige raíz + tipo, ve las notas, las escucha y el teclado.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SCALE_DEFS, SCALE_ROOTS } from "../lib/data";
-import { buildScale, scaleFreqs, scaleIntervals, scaleSteps } from "../lib/theory";
+import { buildScale, midiToFreq, noteToMidi, scaleIntervals, scaleSteps } from "../lib/theory";
+import { INSTRUMENTS, scalePositions, spellingPc } from "../lib/fretboard";
+import { ScaleNotation, type ScaleInstrument } from "./ScaleNotation";
 import type { ScaleStep } from "../lib/theory";
 import { playSequence } from "../lib/audio";
 import { usePlayingNotes } from "../lib/usePlayingNotes";
@@ -13,6 +15,8 @@ import { Keyboard } from "./Keyboard";
 export default function ScalesExplorer() {
   const [rootIdx, setRootIdx] = useState(0);
   const [scaleId, setScaleId] = useState(SCALE_DEFS[0].id);
+  const [instrument, setInstrument] = useState<ScaleInstrument>("piano");
+  const [posIdx, setPosIdx] = useState(0);
 
   const root = SCALE_ROOTS[rootIdx];
   const def = useMemo(() => SCALE_DEFS.find((d) => d.id === scaleId)!, [scaleId]);
@@ -21,14 +25,39 @@ export default function ScalesExplorer() {
   const intervals = useMemo(() => scaleIntervals(notes), [notes]);
   const playing = usePlayingNotes();
 
+  // Alturas del piano: tónica en octava 4 y la escala ascendente + octava (por ortografía,
+  // así funcionan también las dobles alteraciones).
+  const pianoMidis = useMemo(() => {
+    const base = noteToMidi(root, 4);
+    const rootPc = spellingPc(notes[0]);
+    let prev = -1;
+    const offs = notes.map((n) => {
+      let semi = (spellingPc(n) - rootPc + 12) % 12;
+      while (semi <= prev) semi += 12;
+      prev = semi;
+      return semi;
+    });
+    return [...offs, 12].map((o) => base + o);
+  }, [root, notes]);
+
+  const positions = useMemo(
+    () => (instrument === "piano" ? [] : scalePositions(root, def, INSTRUMENTS[instrument])),
+    [instrument, root, def],
+  );
+  // Al cambiar escala o instrumento, vuelve a la posición recomendada.
+  useEffect(() => setPosIdx(0), [instrument, root, def]);
+  const pos = positions[posIdx];
+  const scaleStep = playing.steps.scale;
+
   // Notas con la octava (la tónica repetida arriba) para cerrar la escala.
   const notesWithOctave = [...notes, notes[0]];
   const octaveDegree = notes.length + 1;
 
   const playScale = () => {
-    const freqs = scaleFreqs(notes);
-    // Añade la octava (tónica ×2) al final para que la escala resuelva.
-    playSequence([...freqs, freqs[0] * 2].map((f) => [f]), 0.32, 0.32, "scale");
+    // En guitarra/bajo suena en su registro real (lo escrito + 8va baja).
+    const midis = pos ? pos.tones.map((t) => t.midi) : pianoMidis;
+    const gap = pos ? 0.42 : 0.32;
+    playSequence(midis.map((m) => [midiToFreq(m)]), gap, gap, "scale");
   };
 
   return (
@@ -63,6 +92,19 @@ export default function ScalesExplorer() {
                 {d.name}
               </option>
             ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-xs text-muted">
+          Instrumento
+          <select
+            value={instrument}
+            onChange={(e) => setInstrument(e.target.value as ScaleInstrument)}
+            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-accent"
+          >
+            <option value="piano">Piano</option>
+            <option value="guitar">Guitarra</option>
+            <option value="bass">Bajo</option>
           </select>
         </label>
 
@@ -177,11 +219,29 @@ export default function ScalesExplorer() {
         </p>
       </div>
 
-      {/* Teclado */}
-      <div>
-        <h4 className="mb-2 text-sm font-semibold text-text">Notas en el teclado</h4>
-        <Keyboard notes={notes} playing={playing.notes} />
-      </div>
+      {/* Partitura según el instrumento */}
+      <section aria-labelledby="notation-heading">
+        <h4 id="notation-heading" className="mb-2 text-sm font-semibold text-text">
+          En partitura{instrument !== "piano" ? ` · ${INSTRUMENTS[instrument].name}` : ""}
+        </h4>
+        <ScaleNotation
+          instrument={instrument}
+          notes={notes}
+          pianoMidis={pianoMidis}
+          positions={positions}
+          posIdx={Math.min(posIdx, Math.max(0, positions.length - 1))}
+          onPosIdx={setPosIdx}
+          step={scaleStep}
+        />
+      </section>
+
+      {/* Teclado (piano) */}
+      {instrument === "piano" && (
+        <div>
+          <h4 className="mb-2 text-sm font-semibold text-text">Notas en el teclado</h4>
+          <Keyboard notes={notes} playing={playing.notes} />
+        </div>
+      )}
     </div>
     </MotionConfig>
   );
