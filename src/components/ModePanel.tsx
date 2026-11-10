@@ -15,22 +15,22 @@ export function ModePanel({ degree: d, onClose }: Props) {
   const notes = d.modeNotes.map(prettyEnglish);
 
   return (
-    <div className="mt-4 w-full rounded-xl border border-amber-500/40 bg-slate-900/60 p-5">
+    <div className="mt-4 w-full rounded-xl border border-border bg-surface p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="rounded-md bg-amber-500/15 px-2 py-0.5 font-mono text-sm font-bold text-amber-300">
+          <span className="rounded-md bg-accent/15 px-2 py-0.5 font-mono text-sm font-bold text-accent">
             {d.roman}
           </span>
-          <h4 className="flex items-center text-xl font-bold text-amber-300">
+          <h4 className="flex items-center text-xl font-bold text-text">
             {d.mode.name}
-            <span className="ml-1.5 text-sm font-normal text-slate-400">({d.mode.english})</span>
+            <span className="ml-1.5 text-sm font-normal text-muted">({d.mode.english})</span>
             <InfoIcon tip={MODE_TIP} />
           </h4>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="shrink-0 rounded-lg border border-slate-600 px-2.5 py-1 text-xs text-slate-300 transition hover:bg-slate-700"
+          className="shrink-0 rounded-lg border border-border px-2.5 py-1 text-xs text-text transition hover:bg-surface-2"
           aria-label="Cerrar modo"
         >
           ✕
@@ -39,14 +39,14 @@ export function ModePanel({ degree: d, onClose }: Props) {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div>
-          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
             Fórmula
           </div>
           <div className="flex flex-wrap gap-1.5">
             {intervals.map((iv, i) => (
               <span
                 key={i}
-                className="rounded-md bg-slate-800 px-2 py-1 font-mono text-sm text-amber-200 ring-1 ring-inset ring-slate-700"
+                className="rounded-md bg-surface-2 px-2 py-1 font-mono text-sm text-text ring-1 ring-inset ring-border"
               >
                 {iv}
               </span>
@@ -55,14 +55,14 @@ export function ModePanel({ degree: d, onClose }: Props) {
         </div>
 
         <div>
-          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
             Notas del modo
           </div>
           <div className="flex flex-wrap gap-1.5">
             {notes.map((n, i) => (
               <span
                 key={i}
-                className="rounded-md bg-slate-800 px-2 py-1 text-sm font-semibold text-slate-100 ring-1 ring-inset ring-slate-700"
+                className="rounded-md bg-surface-2 px-2 py-1 text-sm font-semibold text-text ring-1 ring-inset ring-border"
               >
                 {n}
               </span>
@@ -71,10 +71,10 @@ export function ModePanel({ degree: d, onClose }: Props) {
         </div>
 
         <div>
-          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
             Carácter
           </div>
-          <p className="text-sm leading-relaxed text-slate-300">{d.mode.description}</p>
+          <p className="text-sm leading-relaxed text-text">{d.mode.description}</p>
         </div>
       </div>
     </div>

@@ -31,13 +31,13 @@ export default function ScalesExplorer() {
   return (
     <div className="flex w-full flex-col gap-6">
       {/* Selectores */}
-      <div className="flex flex-col gap-4 rounded-xl border border-slate-700 bg-slate-800/50 p-4 sm:flex-row sm:items-end">
-        <label className="flex flex-col gap-1 text-xs text-slate-400">
+      <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface-2 p-4 sm:flex-row sm:items-end">
+        <label className="flex flex-col gap-1 text-xs text-muted">
           Tónica
           <select
             value={rootIdx}
             onChange={(e) => setRootIdx(Number(e.target.value))}
-            className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
+            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-accent"
           >
             {SCALE_ROOTS.map((r, i) => (
               <option key={r} value={i}>
@@ -47,12 +47,12 @@ export default function ScalesExplorer() {
           </select>
         </label>
 
-        <label className="flex flex-1 flex-col gap-1 text-xs text-slate-400">
+        <label className="flex flex-1 flex-col gap-1 text-xs text-muted">
           Tipo de escala
           <select
             value={scaleId}
             onChange={(e) => setScaleId(e.target.value)}
-            className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
+            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-accent"
           >
             {SCALE_DEFS.map((d) => (
               <option key={d.id} value={d.id}>
@@ -65,7 +65,7 @@ export default function ScalesExplorer() {
         <button
           type="button"
           onClick={playScale}
-          className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-amber-400"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-surface transition hover:bg-accent/90"
         >
           ▶ Escuchar escala
         </button>
@@ -73,27 +73,27 @@ export default function ScalesExplorer() {
 
       {/* Notas de la escala */}
       <div>
-        <h3 className="mb-1 text-lg font-semibold text-slate-100">
+        <h3 className="mb-1 text-lg font-semibold text-text">
           {prettyEnglish(root)} {def.name}
         </h3>
-        <p className="mb-3 text-sm text-slate-400">{def.description}</p>
+        <p className="mb-3 text-sm text-muted">{def.description}</p>
         {/* Fórmula de pasos: T T S T T T S */}
-        <div className="mb-4 rounded-xl border border-slate-700 bg-slate-800/40 p-3">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <div className="mb-4 rounded-xl border border-border bg-surface-2 p-3">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             Fórmula de pasos
           </div>
           <div className="flex flex-wrap items-center gap-1.5 font-mono text-lg">
             {steps.map((st, i) => (
               <span key={i} className="flex items-center gap-1.5">
-                {i > 0 && <span className="text-slate-600">–</span>}
+                {i > 0 && <span className="text-muted">–</span>}
                 <StepBadge step={st} />
               </span>
             ))}
           </div>
-          <p className="mt-2 text-xs text-slate-400">
-            <span className="font-semibold text-slate-300">T</span> = tono (2 semitonos) ·{" "}
-            <span className="font-semibold text-amber-400">S</span> = semitono ·{" "}
-            <span className="font-semibold text-sky-300">T½</span> = tono y medio (3 semitonos). Los
+          <p className="mt-2 text-xs text-muted">
+            <span className="font-semibold text-text">T</span> = tono (2 semitonos) ·{" "}
+            <span className="font-semibold text-text">S</span> = semitono ·{" "}
+            <span className="font-semibold text-text">T½</span> = tono y medio (3 semitonos). Los
             semitonos son los puntos de referencia: fíjate dónde caen para reconocer la escala.
           </p>
         </div>
@@ -108,23 +108,23 @@ export default function ScalesExplorer() {
                 {i > 0 && (
                   <div className="flex w-9 flex-col items-center sm:w-11">
                     <StepBadge step={steps[i - 1]} small />
-                    <span className="mt-0.5 h-px w-full bg-slate-700" />
+                    <span className="mt-0.5 h-px w-full bg-border" />
                   </div>
                 )}
                 <div
                   title={iv.name}
                   className={`flex min-w-16 flex-col items-center rounded-xl border px-3 py-2 ${
                     isOctave
-                      ? "border-amber-500/50 bg-amber-500/10"
-                      : "border-slate-700 bg-slate-800/60"
+                      ? "border-accent/50 bg-accent/10"
+                      : "border-border bg-surface-2"
                   }`}
                 >
-                  <span className="text-xs font-semibold text-amber-400">
+                  <span className="text-xs font-semibold text-muted">
                     {isOctave ? octaveDegree : i + 1}
                   </span>
-                  <span className="text-xl font-bold text-slate-50">{prettyEnglish(n)}</span>
-                  <span className="text-xs text-slate-400">{isOctave ? "8va" : toLatin(n)}</span>
-                  <span className="mt-1 rounded bg-slate-900/70 px-1.5 font-mono text-xs text-slate-200">
+                  <span className="text-xl font-bold text-text">{prettyEnglish(n)}</span>
+                  <span className="text-xs text-muted">{isOctave ? "8va" : toLatin(n)}</span>
+                  <span className="mt-1 rounded bg-surface px-1.5 font-mono text-xs text-text">
                     {iv.symbol}
                   </span>
                 </div>
@@ -135,53 +135,47 @@ export default function ScalesExplorer() {
 
         {/* Intervalos desde la tónica */}
         <div className="mt-4">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             Intervalos desde la tónica
           </div>
           <div className="flex flex-wrap gap-2">
             {intervals.map((iv, i) => (
               <span
                 key={i}
-                className="rounded-lg border border-slate-700 bg-slate-800/40 px-2 py-1 text-xs text-slate-300"
+                className="rounded-lg border border-border bg-surface-2 px-2 py-1 text-xs text-text"
               >
-                <span className="font-mono font-semibold text-slate-100">{iv.symbol}</span>{" "}
-                {iv.name} <span className="text-slate-500">· {iv.semis} st</span>
+                <span className="font-mono font-semibold text-text">{iv.symbol}</span>{" "}
+                {iv.name} <span className="text-muted">· {iv.semis} st</span>
               </span>
             ))}
           </div>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-muted">
             Comparada con la escala mayor (1 2 3 4 5 6 7): cada ♭ baja ese grado un semitono y cada ♯
             lo sube. Así se ve rápido qué la hace diferente.
           </p>
         </div>
-        <p className="mt-3 text-sm text-slate-400">
+        <p className="mt-3 text-sm text-muted">
           El último grado ({octaveDegree}) es la{" "}
-          <span className="text-slate-200">misma nota que el 1º</span> (la tónica), pero una octava
+          <span className="text-text">misma nota que el 1º</span> (la tónica), pero una octava
           más aguda. Por eso cierra la escala y le da sensación de reposo.
         </p>
       </div>
 
       {/* Teclado */}
       <div>
-        <h4 className="mb-2 text-sm font-semibold text-slate-300">Notas en el teclado</h4>
+        <h4 className="mb-2 text-sm font-semibold text-text">Notas en el teclado</h4>
         <Keyboard notes={notes} />
       </div>
     </div>
   );
 }
 
-/** Distintivo de un paso (T, S, T½) con su color de referencia. */
+/** Distintivo de un paso (T, S, T½); el símbolo identifica el intervalo. */
 function StepBadge({ step, small = false }: { step: ScaleStep; small?: boolean }) {
-  const color =
-    step.semis === 1
-      ? "text-amber-400"
-      : step.semis === 2
-        ? "text-slate-300"
-        : "text-sky-300";
   return (
     <span
       title={`${step.name} (${step.semis} semitono${step.semis === 1 ? "" : "s"})`}
-      className={`font-mono font-semibold ${small ? "text-xs" : ""} ${color}`}
+      className={`font-mono font-semibold text-text ${small ? "text-xs" : ""}`}
     >
       {step.short}
     </span>

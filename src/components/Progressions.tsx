@@ -18,15 +18,15 @@ export function Progressions({ view, onPlay }: Props) {
         return (
           <div
             key={p.name}
-            className="flex items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2"
+            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2"
           >
             <div>
-              <div className="font-mono text-sm font-semibold text-slate-100">{romans}</div>
-              <div className="text-xs text-slate-400">{p.name}</div>
+              <div className="font-mono text-sm font-semibold text-text">{romans}</div>
+              <div className="text-xs text-muted">{p.name}</div>
             </div>
             <button
               type="button"
-              className="shrink-0 rounded-lg bg-amber-500 px-3 py-1 text-xs font-semibold text-slate-900 transition hover:bg-amber-400"
+              className="shrink-0 rounded-lg border border-border px-3 py-1 text-xs font-semibold text-text transition hover:bg-surface"
               onClick={() => onPlay(p.degrees)}
               aria-label={`Reproducir progresión ${p.name}`}
             >

@@ -4,9 +4,9 @@ import type { DegreeView, Quality } from "./types";
 
 /** Clases Tailwind del badge de calidad. */
 export const QUALITY_BADGE: Record<Quality, string> = {
-  mayor: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
-  menor: "bg-sky-500/15 text-sky-300 ring-sky-500/30",
-  disminuido: "bg-rose-500/15 text-rose-300 ring-rose-500/30",
+  mayor: "bg-transparent text-text ring-border",
+  menor: "bg-transparent text-text ring-border",
+  disminuido: "bg-transparent text-text ring-border",
 };
 
 /** Texto corto del badge de calidad. */

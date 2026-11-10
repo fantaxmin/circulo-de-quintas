@@ -41,13 +41,13 @@ export default function ChordExplorer() {
   return (
     <div className="flex w-full flex-col gap-6">
       {/* Selector de raíz */}
-      <div className="flex flex-col gap-4 rounded-xl border border-slate-700 bg-slate-800/50 p-4 sm:flex-row sm:items-end">
-        <label className="flex flex-col gap-1 text-xs text-slate-400">
+      <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface-2 p-4 sm:flex-row sm:items-end">
+        <label className="flex flex-col gap-1 text-xs text-muted">
           Raíz del acorde
           <select
             value={rootIdx}
             onChange={(e) => setRootIdx(Number(e.target.value))}
-            className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
+            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-accent"
           >
             {SCALE_ROOTS.map((r, i) => (
               <option key={r} value={i}>
@@ -56,7 +56,7 @@ export default function ChordExplorer() {
             ))}
           </select>
         </label>
-        <p className="text-sm text-slate-400 sm:pb-2">
+        <p className="text-sm text-muted sm:pb-2">
           Elige un tipo de acorde abajo para escucharlo y verlo en el teclado.
         </p>
       </div>
@@ -80,12 +80,12 @@ export default function ChordExplorer() {
               }}
               className={`flex cursor-pointer flex-col gap-1 rounded-xl border p-3 transition-colors ${
                 selected
-                  ? "border-amber-500 ring-1 ring-amber-500/50"
-                  : "border-slate-700 bg-slate-800/60 hover:border-amber-500/40"
+                  ? "border-accent ring-1 ring-accent/50"
+                  : "border-border bg-surface-2 hover:border-accent/40"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-lg font-bold text-slate-50">
+                <span className="text-lg font-bold text-text">
                   {prettyEnglish(root)}
                   {c.symbol}
                 </span>
@@ -96,42 +96,42 @@ export default function ChordExplorer() {
                     selectChord(c.id);
                     playChord(chordFreqs(root, c.tones));
                   }}
-                  className="rounded-md bg-amber-500 px-2 py-0.5 text-xs font-semibold text-slate-900 transition hover:bg-amber-400"
+                  className="rounded-md border border-border px-2 py-0.5 text-xs font-semibold text-text transition hover:bg-surface/90"
                   aria-label={`Reproducir ${c.name}`}
                 >
                   ▶
                 </button>
               </div>
-              <span className="text-xs font-medium text-amber-400">{c.name}</span>
-              <span className="font-mono text-xs text-slate-400">{c.formula}</span>
+              <span className="text-xs font-medium text-muted">{c.name}</span>
+              <span className="font-mono text-xs text-muted">{c.formula}</span>
             </div>
           );
         })}
       </div>
 
       {/* Detalle del acorde seleccionado */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+      <div className="rounded-2xl border border-border bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-xl font-bold text-slate-50">
+            <h3 className="text-xl font-bold text-text">
               {prettyEnglish(root)}
               {def.symbol}{" "}
-              <span className="text-base font-normal text-amber-300">— {def.name}</span>
+              <span className="text-base font-normal text-text">— {def.name}</span>
             </h3>
-            <p className="mt-1 text-sm text-slate-400">{def.description}</p>
+            <p className="mt-1 text-sm text-muted">{def.description}</p>
           </div>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => playBlock()}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-amber-400"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-surface transition hover:bg-accent/90"
             >
               ▶ Acorde
             </button>
             <button
               type="button"
               onClick={playArpeggio}
-              className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/20"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text transition hover:bg-surface-2"
             >
               ▶ Arpegio
             </button>
@@ -141,7 +141,7 @@ export default function ChordExplorer() {
         {/* Inversiones */}
         <div className="mt-4">
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold text-slate-300">Inversión:</span>
+            <span className="text-sm font-semibold text-text">Inversión:</span>
             <div className="flex flex-wrap gap-1">
               {notes.map((_, i) => (
                 <button
@@ -150,8 +150,8 @@ export default function ChordExplorer() {
                   onClick={() => setInversion(i)}
                   className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
                     inv === i
-                      ? "bg-amber-500 text-slate-900"
-                      : "border border-slate-600 text-slate-300 hover:bg-slate-800"
+                      ? "border border-accent bg-accent/10 text-accent"
+                      : "border border-border text-text hover:bg-surface-2"
                   }`}
                 >
                   {i === 0 ? "Fundamental" : `${i}ª`}
@@ -159,9 +159,9 @@ export default function ChordExplorer() {
               ))}
             </div>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted">
             {positionName(inv)} — en el bajo suena la{" "}
-            <span className="font-semibold text-cyan-300">
+            <span className="font-semibold text-text">
               {prettyEnglish(voicing[0])} ({voicingDegrees[0]})
             </span>
             . Mismas notas, distinto orden.
@@ -174,12 +174,12 @@ export default function ChordExplorer() {
             <div
               key={i}
               className={`flex min-w-16 flex-col items-center rounded-xl border px-3 py-2 ${
-                i === 0 ? "border-cyan-400/60 bg-cyan-500/10" : "border-slate-700 bg-slate-800/60"
+                i === 0 ? "border-accent/50 bg-accent/10" : "border-border bg-surface-2"
               }`}
             >
-              <span className="text-xs font-semibold text-amber-400">{voicingDegrees[i]}</span>
-              <span className="text-xl font-bold text-slate-50">{prettyEnglish(n)}</span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs font-semibold text-muted">{voicingDegrees[i]}</span>
+              <span className="text-xl font-bold text-text">{prettyEnglish(n)}</span>
+              <span className="text-xs text-muted">
                 {i === 0 ? "bajo" : toLatin(n)}
               </span>
             </div>
@@ -187,7 +187,7 @@ export default function ChordExplorer() {
         </div>
 
         <div className="mt-5">
-          <h4 className="mb-2 text-sm font-semibold text-slate-300">Notas en el teclado</h4>
+          <h4 className="mb-2 text-sm font-semibold text-text">Notas en el teclado</h4>
           <Keyboard notes={notes} />
         </div>
       </div>

@@ -3,7 +3,7 @@
 export function InfoIcon({ tip }: { tip: string }) {
   return (
     <span
-      className="ml-1 inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full bg-slate-600/60 text-[10px] font-bold text-slate-200"
+      className="ml-1 inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-text"
       data-tip={tip}
       tabIndex={0}
     >
