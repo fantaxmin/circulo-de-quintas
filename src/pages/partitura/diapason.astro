@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { InstrumentLesson } from "../../components/lessons/InstrumentLesson";
+import { FretQuiz } from "../../components/lessons/FretQuiz";
 ---
 
 <Layout title="Del diapasón a la partitura · Círculo de Quintas">
@@ -15,6 +16,7 @@ import { InstrumentLesson } from "../../components/lessons/InstrumentLesson";
         <a href="#trastes" class="underline underline-offset-4">Trastes y notas</a>
         <a href="#unisonos" class="underline underline-offset-4">Una nota, varias cuerdas</a>
         <a href="#escalas" class="underline underline-offset-4">Primeras escalas</a>
+        <a href="#practica" class="underline underline-offset-4">Practicar en el diapasón</a>
       </nav>
     </header>
 
@@ -60,7 +62,11 @@ import { InstrumentLesson } from "../../components/lessons/InstrumentLesson";
       <InstrumentLesson client:visible mode="scales" />
     </section>
 
-    <!-- TODO Ola 2: isla del ejercicio «ver nota → tocarla» con respuesta oculta y feedback de posición. -->
+    <section id="practica" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">Ver nota → tocarla</h2>
+      <p class="mt-4 mb-5 leading-relaxed text-muted">Lee la nota sin ayuda de la TAB y encuentra dónde tocarla. Cualquier posición con la misma altura real es válida. Si fallas, puedes seguir probando; al acertar, aparecerán todos sus unísonos dentro del rango elegido.</p>
+      <FretQuiz client:visible />
+    </section>
 
     <footer class="mt-10 flex flex-wrap gap-3 border-t border-border pt-8">
       <a href="/partitura" class="rounded-lg border border-border px-5 py-3 text-sm font-semibold hover:bg-surface-2">Repasar la lectura</a>
