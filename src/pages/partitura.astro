@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { LessonStaff } from "../components/lessons/LessonStaff";
+import { NoteQuiz } from "../components/lessons/NoteQuiz";
 import { C_MAJOR_TREBLE } from "../lib/examples";
 import type { Duration, StaffEvent } from "../lib/notation";
 
@@ -25,6 +26,7 @@ const rhythmEvents = (duration: Duration): StaffEvent[] => [
         <a href="#notas" class="underline underline-offset-4">Líneas y espacios</a>
         <a href="#figuras" class="underline underline-offset-4">Figuras y silencios</a>
         <a href="#alteraciones" class="underline underline-offset-4">Alteraciones</a>
+        <a href="#practica" class="underline underline-offset-4">Practicar lectura</a>
       </nav>
     </header>
 
@@ -81,7 +83,11 @@ const rhythmEvents = (duration: Duration): StaffEvent[] => [
       <p class="mt-4 leading-relaxed text-muted">En los ejemplos de instrumento repetimos las alteraciones junto a las notas para facilitar la lectura. Si ves letras: C = Do, D = Re, E = Mi, F = Fa, G = Sol, A = La y B = Si.</p>
     </section>
 
-    <!-- TODO Ola 2: isla del ejercicio «¿qué nota es?», 10 rondas sin puntuación persistente. -->
+    <section id="practica" class="mt-10 scroll-mt-36 border-t border-border pt-8">
+      <h2 class="text-2xl font-bold">¿Qué nota es?</h2>
+      <p class="mt-4 mb-5 leading-relaxed text-muted">Identifica una nota cada vez. Elige su nombre; al responder, la escucharás y verás la solución. Si activas las alteraciones, selecciona natural, sostenido o bemol antes de responder: buscamos el nombre escrito, aunque otro nombre pueda sonar igual.</p>
+      <NoteQuiz client:visible />
+    </section>
 
     <aside class="mt-10 rounded-2xl border border-accent/50 bg-surface-2 p-6 sm:p-8" aria-label="Siguiente lección">
       <h2 class="text-xl font-bold">Lleva estas notas a tu instrumento</h2>
