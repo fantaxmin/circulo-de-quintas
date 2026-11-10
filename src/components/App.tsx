@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { buildView, noteToFreq, triadFreqs } from "../lib/theory";
-import { BackingTrack, playChord, playSequence, type Genre } from "../lib/audio";
+import { BackingTrack, playChord, playSequence, stopAll, type Genre } from "../lib/audio";
+import { usePlayingNotes } from "../lib/usePlayingNotes";
 import { initTooltips } from "../lib/tooltip";
 import { prettyEnglish } from "../lib/music";
 import { Circle } from "./Circle";
 import { DegreeCard } from "./DegreeCard";
 import { ModePanel } from "./ModePanel";
 import { Keyboard } from "./Keyboard";
-import { Progressions } from "./Progressions";
+import { Progressions, progressionTag } from "./Progressions";
 import { BackingControls } from "./BackingControls";
 
 export default function App() {
@@ -70,13 +71,19 @@ export default function App() {
   }, [view]);
 
   const playScale = useCallback(() => {
-    playSequence(view.degrees.map((_, i) => triadFreqs(view.notes, i)), beat, beat * 0.9, "degrees");
+    playSequence(view.degrees.map((_, i) => triadFreqs(view.notes, i)), beat, beat, "degrees");
   }, [view, beat]);
 
-  const playProgression = useCallback((degrees: number[]) => {
-    // Un acorde cada 2 pulsos (blanca).
-    playSequence(degrees.map((i) => triadFreqs(view.notes, i)), beat * 2, beat * 1.8, "progression");
+  const playProgression = useCallback((name: string, degrees: number[], loop: boolean) => {
+    // Un acorde cada 2 pulsos (blanca); en loop se programan 8 vueltas.
+    const laps = loop ? 8 : 1;
+    const chords = Array.from({ length: laps }, () => degrees).flat();
+    playSequence(chords.map((i) => triadFreqs(view.notes, i)), beat * 2, beat * 2, progressionTag(name));
   }, [view, beat]);
+
+  // Lo que suena ahora (teclas, grado, acorde de la progresión, pulso del backing).
+  const playing = usePlayingNotes();
+  const soundingDegree = playing.steps.degrees;
 
   const toggleBacking = useCallback(() => {
     if (!trackRef.current) trackRef.current = new BackingTrack();
@@ -139,6 +146,7 @@ export default function App() {
               onGenre={setGenre}
               onBpm={setBpm}
               onToggle={toggleBacking}
+              beat={playing.steps.beat}
             />
           </div>
 
@@ -146,7 +154,7 @@ export default function App() {
             <h4 className="mb-2 text-sm font-semibold text-text">
               Notas de la escala en el teclado
             </h4>
-            <Keyboard notes={view.notes} />
+            <Keyboard notes={view.notes} playing={playing.notes} />
           </div>
         </section>
       </div>
@@ -170,6 +178,7 @@ export default function App() {
               degree={d}
               isMinor={view.isMinor}
               selected={selectedDegree === d.index}
+              sounding={soundingDegree === d.index}
               onSelect={() => selectDegree(d.index)}
               onPlay={() => playDegree(d.index)}
             />
@@ -183,7 +192,7 @@ export default function App() {
 
       <section className="min-w-0 lg:col-span-2" aria-labelledby="progressions-heading">
         <h3 id="progressions-heading" className="mb-3 text-lg font-semibold text-text">Progresiones comunes</h3>
-        <Progressions view={view} onPlay={playProgression} />
+        <Progressions view={view} onPlay={playProgression} onStop={stopAll} steps={playing.steps} />
       </section>
     </div>
   );

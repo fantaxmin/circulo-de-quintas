@@ -5,6 +5,7 @@ import { SCALE_DEFS, SCALE_ROOTS } from "../lib/data";
 import { buildScale, scaleFreqs, scaleIntervals, scaleSteps } from "../lib/theory";
 import type { ScaleStep } from "../lib/theory";
 import { playSequence } from "../lib/audio";
+import { usePlayingNotes } from "../lib/usePlayingNotes";
 import { prettyEnglish, toLatin } from "../lib/music";
 import { Keyboard } from "./Keyboard";
 
@@ -17,6 +18,7 @@ export default function ScalesExplorer() {
   const notes = useMemo(() => buildScale(root, def), [root, def]);
   const steps = useMemo(() => scaleSteps(notes), [notes]);
   const intervals = useMemo(() => scaleIntervals(notes), [notes]);
+  const playing = usePlayingNotes();
 
   // Notas con la octava (la tónica repetida arriba) para cerrar la escala.
   const notesWithOctave = [...notes, notes[0]];
@@ -25,7 +27,7 @@ export default function ScalesExplorer() {
   const playScale = () => {
     const freqs = scaleFreqs(notes);
     // Añade la octava (tónica ×2) al final para que la escala resuelva.
-    playSequence([...freqs, freqs[0] * 2].map((f) => [f]), 0.32, 0.32);
+    playSequence([...freqs, freqs[0] * 2].map((f) => [f]), 0.32, 0.32, "scale");
   };
 
   return (
@@ -102,21 +104,27 @@ export default function ScalesExplorer() {
         <div className="flex flex-wrap items-center gap-y-3">
           {notesWithOctave.map((n, i) => {
             const isOctave = i === notesWithOctave.length - 1;
+            const sounding = playing.steps.scale === i;
+            const stepSounding = playing.steps.scale === i && i > 0;
             const iv = isOctave ? { symbol: "8", name: "Octava" } : intervals[i];
             return (
               <div key={i} className="flex items-center">
                 {i > 0 && (
                   <div className="flex w-9 flex-col items-center sm:w-11">
                     <StepBadge step={steps[i - 1]} small />
-                    <span className="mt-0.5 h-px w-full bg-border" />
+                    <span
+                      className={`mt-0.5 h-px w-full transition-colors ${stepSounding ? "bg-playing" : "bg-border"}`}
+                    />
                   </div>
                 )}
                 <div
                   title={iv.name}
-                  className={`flex min-w-16 flex-col items-center rounded-xl border px-3 py-2 ${
-                    isOctave
-                      ? "border-accent/50 bg-accent/10"
-                      : "border-border bg-surface-2"
+                  className={`flex min-w-16 flex-col items-center rounded-xl border px-3 py-2 transition-colors duration-75 ${
+                    sounding
+                      ? "border-playing bg-playing/15"
+                      : isOctave
+                        ? "border-accent/50 bg-accent/10"
+                        : "border-border bg-surface-2"
                   }`}
                 >
                   <span className="text-xs font-semibold text-muted">
@@ -164,7 +172,7 @@ export default function ScalesExplorer() {
       {/* Teclado */}
       <div>
         <h4 className="mb-2 text-sm font-semibold text-text">Notas en el teclado</h4>
-        <Keyboard notes={notes} />
+        <Keyboard notes={notes} playing={playing.notes} />
       </div>
     </div>
   );

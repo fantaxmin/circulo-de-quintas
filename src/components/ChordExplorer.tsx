@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { CHORD_DEFS, SCALE_ROOTS } from "../lib/data";
 import { buildChord, chordFreqs, invertChordFreqs } from "../lib/theory";
 import { playChord, playSequence } from "../lib/audio";
+import { usePlayingNotes } from "../lib/usePlayingNotes";
 import { prettyEnglish, toLatin } from "../lib/music";
 import { Keyboard } from "./Keyboard";
 
@@ -27,6 +28,8 @@ export default function ChordExplorer() {
   // Notas reordenadas según la inversión (la grave pasa al inicio).
   const voicing = [...notes.slice(inv), ...notes.slice(0, inv)];
   const voicingDegrees = [...degrees.slice(inv), ...degrees.slice(0, inv)];
+
+  const playing = usePlayingNotes();
 
   const selectChord = (id: string) => {
     setChordId(id);
@@ -140,7 +143,7 @@ export default function ChordExplorer() {
 
         <div className="mt-5">
           <h4 className="mb-2 text-sm font-semibold text-text">Notas en el teclado</h4>
-          <Keyboard notes={notes} legend="Notas del acorde" />
+          <Keyboard notes={notes} legend="Notas del acorde" playing={playing.notes} />
         </div>
       </div>
 
