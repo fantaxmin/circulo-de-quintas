@@ -23,6 +23,15 @@ function cssColor(token: string): string {
   return v || "#f1f5f9";
 }
 
+/** Color de fondo efectivo (primer ancestro con fondo opaco). */
+function backgroundOf(el: HTMLElement | null): string {
+  for (let n = el; n; n = n.parentElement) {
+    const bg = getComputedStyle(n).backgroundColor;
+    if (bg && bg !== "transparent" && !/rgba\(.*,\s*0\)$/.test(bg)) return bg;
+  }
+  return cssColor("--color-surface");
+}
+
 /** Nombre accesible de un evento: "Fa sostenido 4, negra". */
 function spokenName(e: StaffEvent): string {
   const dur = { w: "redonda", h: "blanca", q: "negra", "8": "corchea" }[e.duration];
@@ -93,28 +102,38 @@ export function Staff({
 
       const fg = cssColor("--color-text");
       const totalW = Math.max(width, 90 + events.length * NOTE_W);
-      const staffH = 120;
-      const height = withTab ? staffH + 110 : staffH + 10;
+
+      // Primero se crean los pentagramas para saber la altura total; luego se dibuja.
+      const stave = new Stave(0, 10, totalW - 1);
+      stave.addClef(drawClef, "default", inst ? "8vb" : undefined);
+      if (timeSignature) stave.addTimeSignature(timeSignature);
+
+      let tabStave: InstanceType<typeof TabStave> | null = null;
+      if (withTab) {
+        tabStave = new TabStave(0, stave.getYForLine(4) + 46, totalW - 1, {
+          numLines: inst!.tuning.length,
+          spaceAboveStaffLn: 2,
+        });
+        tabStave.addClef("tab");
+      }
+      // Alto: última línea + margen (ledger lines y etiquetas bajo el pentagrama).
+      const height = Math.ceil(
+        tabStave ? tabStave.getYForLine(inst!.tuning.length - 1) + 14 : stave.getYForLine(4) + 56,
+      );
 
       const renderer = new Renderer(host, Renderer.Backends.SVG);
       renderer.resize(totalW, height);
       const ctx = renderer.getContext();
       ctx.setFillStyle(fg);
       ctx.setStrokeStyle(fg);
-      // Fondo de los números de la TAB (clearRect) = fondo de la página, no blanco.
+      // Fondo de los números de la TAB (clearRect) = fondo del recuadro, no blanco.
       (ctx as unknown as { setBackgroundFillStyle(c: string): void }).setBackgroundFillStyle(
-        cssColor("--color-surface"),
+        backgroundOf(host),
       );
 
-      const stave = new Stave(0, 10, totalW - 1);
-      stave.addClef(drawClef, "default", inst ? "8vb" : undefined);
-      if (timeSignature) stave.addTimeSignature(timeSignature);
       stave.setContext(ctx).draw();
-
-      let tabStave: InstanceType<typeof TabStave> | null = null;
-      if (withTab) {
-        tabStave = new TabStave(0, staffH, totalW - 1, { numLines: inst!.tuning.length });
-        tabStave.addClef("tab").setContext(ctx).draw();
+      if (tabStave) {
+        tabStave.setContext(ctx).draw();
         new StaveConnector(stave, tabStave).setType("singleLeft").setContext(ctx).draw();
       }
 
@@ -153,6 +172,7 @@ export function Staff({
             0,
           );
         }
+        note.setLedgerLineStyle({ strokeStyle: fg, lineWidth: 1.4 });
         const mark = marks[ev.id];
         if (mark) {
           const c = cssColor(MARK_COLORS[mark]);
@@ -252,7 +272,7 @@ export function Staff({
         role={onNoteClick ? "group" : "img"}
         aria-label={summary}
         className="w-full overflow-x-auto rounded-lg [&_svg]:max-w-none"
-        style={{ minHeight: withTab ? 230 : 130 }}
+        style={{ minHeight: withTab ? 200 : 120 }}
       />
     </figure>
   );
