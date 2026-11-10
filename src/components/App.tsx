@@ -99,38 +99,66 @@ export default function App() {
   const relEs = isMinor ? `${view.relativeTonicEs} mayor` : `${view.relativeTonicEs} menor`;
 
   return (
-    <div className="flex w-full flex-col items-center gap-8">
-      <Circle keyIndex={keyIndex} isMinor={isMinor} onSelect={selectKey} />
+    <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-12">
+      <div className="min-w-0 self-start lg:sticky lg:top-24">
+        <Circle keyIndex={keyIndex} isMinor={isMinor} onSelect={selectKey} />
+      </div>
 
-      {/* Header de la tonalidad activa */}
-      <header className="text-center">
-        <h2 className="text-2xl font-semibold text-slate-100">
-          Tonalidad:{" "}
-          <span className="text-amber-400">
-            {prettyEnglish(view.tonic)} {kind} · {view.tonicEs}
-          </span>
-        </h2>
-        <button
-          type="button"
-          onClick={toggleRelative}
-          className="mt-1 text-sm text-slate-400 underline decoration-dotted underline-offset-4 transition hover:text-amber-300"
-        >
-          {relLabelKind}:{" "}
-          <span className="font-semibold text-slate-300">
-            {prettyEnglish(view.relativeLabel)} {relKind} · {relEs}
-          </span>{" "}
-          ↺
-        </button>
-      </header>
+      <div className="flex min-w-0 flex-col gap-6">
+        {/* Header de la tonalidad activa */}
+        <header className="text-center">
+          <h2 className="text-2xl font-semibold text-text">
+            Tonalidad:{" "}
+            <span className="text-accent">
+              {prettyEnglish(view.tonic)} {kind} · {view.tonicEs}
+            </span>
+          </h2>
+          <button
+            type="button"
+            onClick={toggleRelative}
+            className="mt-1 text-sm text-muted underline decoration-dotted underline-offset-4 transition hover:text-accent"
+          >
+            {relLabelKind}:{" "}
+            <span className="font-semibold text-text">
+              {prettyEnglish(view.relativeLabel)} {relKind} · {relEs}
+            </span>{" "}
+            ↺
+          </button>
+        </header>
+
+        <section className="flex min-w-0 flex-col gap-5" aria-labelledby="improv-heading">
+          <h3 id="improv-heading" className="text-xl font-bold text-text">
+            Improvisa sobre esta tonalidad
+          </h3>
+          <div>
+            <h4 className="mb-2 text-sm font-semibold text-text">Backing track</h4>
+            <BackingControls
+              genre={genre}
+              bpm={bpm}
+              isPlaying={backingPlaying}
+              onGenre={setGenre}
+              onBpm={setBpm}
+              onToggle={toggleBacking}
+            />
+          </div>
+
+          <div>
+            <h4 className="mb-2 text-sm font-semibold text-text">
+              Notas de la escala en el teclado
+            </h4>
+            <Keyboard notes={view.notes} />
+          </div>
+        </section>
+      </div>
 
       {/* Grados de la escala */}
-      <section className="w-full">
+      <section className="min-w-0 lg:col-span-2">
         <div className="mb-3 flex flex-col items-center gap-2 text-center">
-          <h3 className="text-lg font-semibold text-slate-200">Grados de la escala</h3>
+          <h3 className="text-lg font-semibold text-text">Grados de la escala</h3>
           <button
             type="button"
             onClick={playScale}
-            className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-1.5 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/20"
+            className="rounded-lg border border-border bg-transparent px-4 py-1.5 text-sm font-semibold text-accent transition hover:bg-surface-2"
           >
             ▶ Reproducir progresión
           </button>
@@ -153,35 +181,9 @@ export default function App() {
         )}
       </section>
 
-      {/* Improvisación */}
-      <section className="flex w-full flex-col gap-5 rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-        <h3 className="text-center text-xl font-bold text-slate-100">
-          Improvisa sobre esta tonalidad
-        </h3>
-
-        <div>
-          <h4 className="mb-2 text-sm font-semibold text-slate-300">Backing track</h4>
-          <BackingControls
-            genre={genre}
-            bpm={bpm}
-            isPlaying={backingPlaying}
-            onGenre={setGenre}
-            onBpm={setBpm}
-            onToggle={toggleBacking}
-          />
-        </div>
-
-        <div>
-          <h4 className="mb-2 text-sm font-semibold text-slate-300">
-            Notas de la escala en el teclado
-          </h4>
-          <Keyboard notes={view.notes} />
-        </div>
-
-        <div>
-          <h4 className="mb-2 text-sm font-semibold text-slate-300">Progresiones comunes</h4>
-          <Progressions view={view} onPlay={playProgression} />
-        </div>
+      <section className="min-w-0 lg:col-span-2" aria-labelledby="progressions-heading">
+        <h3 id="progressions-heading" className="mb-3 text-lg font-semibold text-text">Progresiones comunes</h3>
+        <Progressions view={view} onPlay={playProgression} />
       </section>
     </div>
   );

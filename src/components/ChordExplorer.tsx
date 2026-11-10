@@ -61,54 +61,6 @@ export default function ChordExplorer() {
         </p>
       </div>
 
-      {/* Cuadrícula de tipos de acorde */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-        {CHORD_DEFS.map((c) => {
-          const selected = c.id === chordId;
-          return (
-            <div
-              key={c.id}
-              onClick={() => selectChord(c.id)}
-              role="button"
-              tabIndex={0}
-              aria-pressed={selected}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  selectChord(c.id);
-                }
-              }}
-              className={`flex cursor-pointer flex-col gap-1 rounded-xl border p-3 transition-colors ${
-                selected
-                  ? "border-accent ring-1 ring-accent/50"
-                  : "border-border bg-surface-2 hover:border-accent/40"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-lg font-bold text-text">
-                  {prettyEnglish(root)}
-                  {c.symbol}
-                </span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectChord(c.id);
-                    playChord(chordFreqs(root, c.tones));
-                  }}
-                  className="rounded-md border border-border px-2 py-0.5 text-xs font-semibold text-text transition hover:bg-surface/90"
-                  aria-label={`Reproducir ${c.name}`}
-                >
-                  ▶
-                </button>
-              </div>
-              <span className="text-xs font-medium text-muted">{c.name}</span>
-              <span className="font-mono text-xs text-muted">{c.formula}</span>
-            </div>
-          );
-        })}
-      </div>
-
       {/* Detalle del acorde seleccionado */}
       <div className="rounded-2xl border border-border bg-surface p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -188,9 +140,58 @@ export default function ChordExplorer() {
 
         <div className="mt-5">
           <h4 className="mb-2 text-sm font-semibold text-text">Notas en el teclado</h4>
-          <Keyboard notes={notes} />
+          <Keyboard notes={notes} legend="Notas del acorde" />
         </div>
       </div>
+
+      {/* Cuadrícula de tipos de acorde */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+        {CHORD_DEFS.map((c) => {
+          const selected = c.id === chordId;
+          return (
+            <div
+              key={c.id}
+              onClick={() => selectChord(c.id)}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selected}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  selectChord(c.id);
+                }
+              }}
+              className={`flex cursor-pointer flex-col gap-1 rounded-xl border p-3 transition-colors ${
+                selected
+                  ? "border-accent ring-1 ring-accent/50"
+                  : "border-border bg-surface-2 hover:border-accent/40"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-lg font-bold text-text">
+                  {prettyEnglish(root)}
+                  {c.symbol}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectChord(c.id);
+                    playChord(chordFreqs(root, c.tones));
+                  }}
+                  className="rounded-md border border-border px-2 py-0.5 text-xs font-semibold text-text transition hover:bg-surface/90"
+                  aria-label={`Reproducir ${c.name}`}
+                >
+                  ▶
+                </button>
+              </div>
+              <span className="text-xs font-medium text-muted">{c.name}</span>
+              <span className="font-mono text-xs text-muted">{c.formula}</span>
+            </div>
+          );
+        })}
+      </div>
+
     </div>
   );
 }

@@ -10,19 +10,19 @@ const links = [
 ---
 
 <nav class="sticky top-0 z-40 border-b border-border bg-surface backdrop-blur">
-  <div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-    <a href="/" class="flex items-center gap-2 font-bold text-text">
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3">
+    <a href="/" class="flex shrink-0 items-center gap-2 font-bold text-text">
       <span class="text-accent">◍</span> Círculo de Quintas
     </a>
-    <ul class="flex items-center gap-1 text-sm">
+    <ul class="flex w-full min-w-0 items-center gap-1 overflow-x-auto pb-1 text-sm sm:w-auto sm:pb-0">
       {
         links.map((l) => {
           const active = path === l.href;
           return (
-            <li>
+            <li class="shrink-0">
               <a
                 href={l.href}
-                class={`rounded-lg px-3 py-1.5 transition ${
+                class={`block whitespace-nowrap rounded-lg px-3 py-2 transition ${
                   active
                     ? "bg-accent/15 font-semibold text-accent"
                     : "text-text hover:bg-surface-2 hover:text-text"
