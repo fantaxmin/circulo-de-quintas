@@ -246,3 +246,65 @@ function makeDegree(
     modeNotes: rotate(scaleNotes, index),
   };
 }
+
+/** Un paso entre dos notas consecutivas de una escala. */
+export interface ScaleStep {
+  /** Distancia en semitonos (1, 2, 3...). */
+  semis: number;
+  /** Abreviatura: S (semitono), T (tono), T½ (tono y medio). */
+  short: string;
+  /** Nombre completo en español. */
+  name: string;
+}
+
+const STEP_NAMES: Record<number, [string, string]> = {
+  1: ["S", "semitono"],
+  2: ["T", "tono"],
+  3: ["T½", "tono y medio"],
+  4: ["2T", "dos tonos"],
+};
+
+/**
+ * Fórmula de pasos de una escala (incluye el salto final hasta la octava):
+ * mayor -> T T S T T T S.
+ */
+export function scaleSteps(notes: string[]): ScaleStep[] {
+  const offsets = [...ascendingOffsets(notes), 12];
+  return offsets.slice(1).map((off, i) => {
+    const semis = off - offsets[i];
+    const [short, name] = STEP_NAMES[semis] ?? [`${semis}S`, `${semis} semitonos`];
+    return { semis, short, name };
+  });
+}
+
+/** Intervalo de una nota respecto a la tónica. */
+export interface Interval {
+  /** Símbolo de grado: 1, 2, ♭3, ♯4... */
+  symbol: string;
+  /** Nombre en español: "3ª menor", "5ª justa"... */
+  name: string;
+  /** Semitonos desde la tónica. */
+  semis: number;
+}
+
+// Semitonos de los intervalos mayores/justos para 1ª..7ª.
+const NATURAL_SEMIS = [0, 2, 4, 5, 7, 9, 11];
+const PERFECT = new Set([1, 4, 5]);
+
+/** Intervalo de cada nota de la escala respecto a su tónica (según su letra). */
+export function scaleIntervals(notes: string[]): Interval[] {
+  const offsets = ascendingOffsets(notes);
+  const rootLetter = LETTERS.indexOf(notes[0][0]);
+  return notes.map((n, i) => {
+    const num = ((LETTERS.indexOf(n[0]) - rootLetter + 7) % 7) + 1;
+    const semis = offsets[i];
+    const diff = semis - NATURAL_SEMIS[num - 1];
+    const symbol = (diff < 0 ? "♭".repeat(-diff) : "♯".repeat(diff)) + num;
+    let quality: string;
+    if (num === 1) quality = "tónica";
+    else if (PERFECT.has(num)) quality = diff === 0 ? "justa" : diff < 0 ? "disminuida" : "aumentada";
+    else quality = diff === 0 ? "mayor" : diff === -1 ? "menor" : diff < -1 ? "disminuida" : "aumentada";
+    const name = num === 1 ? "Tónica" : `${num}ª ${quality}`;
+    return { symbol, name, semis };
+  });
+}

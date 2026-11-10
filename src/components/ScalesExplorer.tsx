@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { SCALE_DEFS, SCALE_ROOTS } from "../lib/data";
-import { buildScale, scaleFreqs } from "../lib/theory";
+import { buildScale, scaleFreqs, scaleIntervals, scaleSteps } from "../lib/theory";
+import type { ScaleStep } from "../lib/theory";
 import { playSequence } from "../lib/audio";
 import { prettyEnglish, toLatin } from "../lib/music";
 import { Keyboard } from "./Keyboard";
@@ -14,6 +15,8 @@ export default function ScalesExplorer() {
   const root = SCALE_ROOTS[rootIdx];
   const def = useMemo(() => SCALE_DEFS.find((d) => d.id === scaleId)!, [scaleId]);
   const notes = useMemo(() => buildScale(root, def), [root, def]);
+  const steps = useMemo(() => scaleSteps(notes), [notes]);
+  const intervals = useMemo(() => scaleIntervals(notes), [notes]);
 
   // Notas con la octava (la tónica repetida arriba) para cerrar la escala.
   const notesWithOctave = [...notes, notes[0]];
@@ -74,26 +77,82 @@ export default function ScalesExplorer() {
           {prettyEnglish(root)} {def.name}
         </h3>
         <p className="mb-3 text-sm text-slate-400">{def.description}</p>
-        <div className="flex flex-wrap gap-2">
+        {/* Fórmula de pasos: T T S T T T S */}
+        <div className="mb-4 rounded-xl border border-slate-700 bg-slate-800/40 p-3">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Fórmula de pasos
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 font-mono text-lg">
+            {steps.map((st, i) => (
+              <span key={i} className="flex items-center gap-1.5">
+                {i > 0 && <span className="text-slate-600">–</span>}
+                <StepBadge step={st} />
+              </span>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            <span className="font-semibold text-slate-300">T</span> = tono (2 semitonos) ·{" "}
+            <span className="font-semibold text-amber-400">S</span> = semitono ·{" "}
+            <span className="font-semibold text-sky-300">T½</span> = tono y medio (3 semitonos). Los
+            semitonos son los puntos de referencia: fíjate dónde caen para reconocer la escala.
+          </p>
+        </div>
+
+        {/* Notas con el intervalo respecto a la tónica y el paso entre ellas */}
+        <div className="flex flex-wrap items-center gap-y-3">
           {notesWithOctave.map((n, i) => {
             const isOctave = i === notesWithOctave.length - 1;
+            const iv = isOctave ? { symbol: "8", name: "Octava" } : intervals[i];
             return (
-              <div
-                key={i}
-                className={`flex min-w-16 flex-col items-center rounded-xl border px-3 py-2 ${
-                  isOctave
-                    ? "border-amber-500/50 bg-amber-500/10"
-                    : "border-slate-700 bg-slate-800/60"
-                }`}
-              >
-                <span className="text-xs font-semibold text-amber-400">
-                  {isOctave ? octaveDegree : i + 1}
-                </span>
-                <span className="text-xl font-bold text-slate-50">{prettyEnglish(n)}</span>
-                <span className="text-xs text-slate-400">{isOctave ? "8va" : toLatin(n)}</span>
+              <div key={i} className="flex items-center">
+                {i > 0 && (
+                  <div className="flex w-9 flex-col items-center sm:w-11">
+                    <StepBadge step={steps[i - 1]} small />
+                    <span className="mt-0.5 h-px w-full bg-slate-700" />
+                  </div>
+                )}
+                <div
+                  title={iv.name}
+                  className={`flex min-w-16 flex-col items-center rounded-xl border px-3 py-2 ${
+                    isOctave
+                      ? "border-amber-500/50 bg-amber-500/10"
+                      : "border-slate-700 bg-slate-800/60"
+                  }`}
+                >
+                  <span className="text-xs font-semibold text-amber-400">
+                    {isOctave ? octaveDegree : i + 1}
+                  </span>
+                  <span className="text-xl font-bold text-slate-50">{prettyEnglish(n)}</span>
+                  <span className="text-xs text-slate-400">{isOctave ? "8va" : toLatin(n)}</span>
+                  <span className="mt-1 rounded bg-slate-900/70 px-1.5 font-mono text-xs text-slate-200">
+                    {iv.symbol}
+                  </span>
+                </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Intervalos desde la tónica */}
+        <div className="mt-4">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Intervalos desde la tónica
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {intervals.map((iv, i) => (
+              <span
+                key={i}
+                className="rounded-lg border border-slate-700 bg-slate-800/40 px-2 py-1 text-xs text-slate-300"
+              >
+                <span className="font-mono font-semibold text-slate-100">{iv.symbol}</span>{" "}
+                {iv.name} <span className="text-slate-500">· {iv.semis} st</span>
+              </span>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Comparada con la escala mayor (1 2 3 4 5 6 7): cada ♭ baja ese grado un semitono y cada ♯
+            lo sube. Así se ve rápido qué la hace diferente.
+          </p>
         </div>
         <p className="mt-3 text-sm text-slate-400">
           El último grado ({octaveDegree}) es la{" "}
@@ -108,5 +167,23 @@ export default function ScalesExplorer() {
         <Keyboard notes={notes} />
       </div>
     </div>
+  );
+}
+
+/** Distintivo de un paso (T, S, T½) con su color de referencia. */
+function StepBadge({ step, small = false }: { step: ScaleStep; small?: boolean }) {
+  const color =
+    step.semis === 1
+      ? "text-amber-400"
+      : step.semis === 2
+        ? "text-slate-300"
+        : "text-sky-300";
+  return (
+    <span
+      title={`${step.name} (${step.semis} semitono${step.semis === 1 ? "" : "s"})`}
+      className={`font-mono font-semibold ${small ? "text-xs" : ""} ${color}`}
+    >
+      {step.short}
+    </span>
   );
 }
